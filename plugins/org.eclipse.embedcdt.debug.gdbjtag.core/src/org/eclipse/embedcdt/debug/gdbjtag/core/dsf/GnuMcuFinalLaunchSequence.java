@@ -40,6 +40,8 @@ import org.eclipse.embedcdt.debug.gdbjtag.core.services.IPeripheralMemoryService
 import org.eclipse.embedcdt.debug.gdbjtag.core.services.IPeripheralsService;
 import org.eclipse.embedcdt.internal.debug.gdbjtag.core.Activator;
 
+import com.ashling.riscfree.globalvariable.view.dsf.IGlobalVariableService;
+
 public class GnuMcuFinalLaunchSequence extends GDBJtagDSFFinalLaunchSequence {
 
 	// ------------------------------------------------------------------------
@@ -59,7 +61,7 @@ public class GnuMcuFinalLaunchSequence extends GDBJtagDSFFinalLaunchSequence {
 	// ------------------------------------------------------------------------
 
 	private String[] topPreInitSteps = { "stepCreatePeripheralService", "stepCreatePeripheralMemoryService",
-			"stepCreateDebuggerCommandsService" };
+			"stepCreateDebuggerCommandsService", "stepStartGlobalVariableService" };
 
 	private String[] topToRemove = { "stepRemoteConnection", "stepAttachToProcess" };
 
@@ -400,6 +402,25 @@ public class GnuMcuFinalLaunchSequence extends GDBJtagDSFFinalLaunchSequence {
 			rm.done();
 		}
 	}
+
+	// <CUSTOMIZATION - ASHLING>
+	@Execute
+	public void stepStartGlobalVariableService(final RequestMonitor rm) {
+		GdbLaunch launch = ((GdbLaunch) this.fSession.getModelAdapter(ILaunch.class));
+		IGlobalVariableService globalVariableService = launch.getServiceFactory()
+				.createService(IGlobalVariableService.class, launch.getSession());
+		if (Activator.getInstance().isDebugging()) {
+			System.out.println("GnuMcuFinalLaunchSequence.stepStartGlobalVariableService() " + globalVariableService);
+		}
+		if (globalVariableService != null) {
+			globalVariableService.initialize(rm);
+		} else {
+			rm.setStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Unable to start GlobalVariableService"));
+			rm.done();
+		}
+
+	}
+	// </CUSTOMIZATION>
 
 	// ------------------------------------------------------------------------
 }
