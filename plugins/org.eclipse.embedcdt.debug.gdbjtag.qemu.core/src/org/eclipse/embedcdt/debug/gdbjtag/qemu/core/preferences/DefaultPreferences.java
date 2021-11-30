@@ -24,16 +24,20 @@ public class DefaultPreferences extends org.eclipse.embedcdt.debug.gdbjtag.core.
 
 	public static final boolean SERVER_DO_START_DEFAULT = true;
 	public static final boolean DO_START_GDB_SERVER_DEFAULT = true;
-	public static final String SERVER_EXECUTABLE_DEFAULT = "${qemu_path}/${qemu_executable}";
-	protected static final String CLIENT_EXECUTABLE_DEFAULT = "${cross_prefix}gdb${cross_suffix}";
 
 	public static final String SERVER_EXECUTABLE_DEFAULT_NAME = "qemu-system-gnuarmeclipse";
 
-	public static final String QEMU_BOARD_NAME_DEFAULT = "?";
-	public static final String QEMU_DEVICE_NAME_DEFAULT = "?";
+	public static final String QEMU_BOARD_NAME_RISCV_DEFAULT = "spike";
+	public static final String QEMU_BOARD_NAME_ARM_DEFAULT = "akita";
+	public static final String QEMU_DEVICE_NAME_DEFAULT = "";
+
+	//ASHLING CUSTOMIZATION - Default preferences for the combo box's
+	public static final String QEMU_BOARD_ARCHITECTURE = "RISC-V";
+	public static final String QEMU_BOARD_BIT = "32";
+	//ASHLING CUSTOMIZATION - Default preferences for the combo box's
 
 	public static final int SERVER_GDB_PORT_NUMBER_DEFAULT = 1234;
-	public static final String SERVER_OTHER_OPTIONS_DEFAULT = "-d unimp,guest_errors"; //$NON-NLS-1$
+	public static final String SERVER_OTHER_OPTIONS_DEFAULT = "-S -d unimp,guest_errors"; //$NON-NLS-1$
 
 	public static final boolean DO_GDB_SERVER_ALLOCATE_CONSOLE_DEFAULT = true;
 
@@ -41,7 +45,7 @@ public class DefaultPreferences extends org.eclipse.embedcdt.debug.gdbjtag.core.
 
 	public static final String CLIENT_OTHER_OPTIONS_DEFAULT = "";
 
-	public static final String CLIENT_COMMANDS_DEFAULT = "set mem inaccessible-by-default off\n";
+	public static final String CLIENT_COMMANDS_DEFAULT = "set mem inaccessible-by-default off\nset arch riscv:rv32\nset remotetimeout 250\n";
 
 	public static final boolean USE_REMOTE_TARGET_DEFAULT = true;
 	public static final String REMOTE_IP_ADDRESS_LOCALHOST = "localhost"; //$NON-NLS-1$
@@ -59,7 +63,7 @@ public class DefaultPreferences extends org.eclipse.embedcdt.debug.gdbjtag.core.
 
 	public static final String INIT_OTHER_DEFAULT = "";
 
-	public static final boolean DO_DEBUG_IN_RAM_DEFAULT = false;
+	public static final boolean DO_DEBUG_IN_RAM_DEFAULT = true;
 
 	public static final boolean DO_PRERUN_RESET_DEFAULT = true;
 	public static final String DO_PRERUN_RESET_COMMAND = DO_INITIAL_RESET_COMMAND;
@@ -72,7 +76,7 @@ public class DefaultPreferences extends org.eclipse.embedcdt.debug.gdbjtag.core.
 	public static final boolean DO_CONTINUE_DEFAULT = true;
 
 	public static final String DO_CONTINUE_COMMAND = "continue";
-	public static final boolean DISABLE_GRAPHICS_DEFAULT = false;
+	public static final boolean DISABLE_GRAPHICS_DEFAULT = true;
 
 	// ------------------------------------------------------------------------
 
@@ -83,18 +87,30 @@ public class DefaultPreferences extends org.eclipse.embedcdt.debug.gdbjtag.core.
 
 	// ------------------------------------------------------------------------
 
+	//		<CUSTOMISATION> ASHLING
+	public static final String SERVER_EXECUTABLE_DEFAULT = "${eclipse_home}/../qemu/qemu-system-riscv32";
+	protected static final String CLIENT_EXECUTABLE_DEFAULT = "${eclipse_home}/../toolchain/riscv64-unknown-elf/bin/riscv64-unknown-elf-gdb";
+
+	public enum OS {
+		WINDOWS, LINUX
+	}
+
 	public DefaultPreferences(String pluginId) {
 		super(pluginId);
 	}
 
+	//		<CUSTOMISATION> ASHLING
+
 	// ------------------------------------------------------------------------
 
 	public String getGdbServerExecutable() {
-		return getString(PersistentPreferences.GDB_SERVER_EXECUTABLE, SERVER_EXECUTABLE_DEFAULT);
+		return getString(PersistentPreferences.GDB_SERVER_EXECUTABLE,
+				getOSSpecificExecutableString(SERVER_EXECUTABLE_DEFAULT));
 	}
 
 	public String getGdbClientExecutable() {
-		return getString(PersistentPreferences.GDB_CLIENT_EXECUTABLE, CLIENT_EXECUTABLE_DEFAULT);
+		return getString(PersistentPreferences.GDB_CLIENT_EXECUTABLE,
+				getOSSpecificExecutableString(CLIENT_EXECUTABLE_DEFAULT));
 	}
 
 	// ------------------------------------------------------------------------
@@ -259,4 +275,30 @@ public class DefaultPreferences extends org.eclipse.embedcdt.debug.gdbjtag.core.
 	}
 
 	// ------------------------------------------------------------------------
+
+	//		<CUSTOMISATION> ASHLING
+
+	public static OS getOperatingSystem() {
+
+		// detecting the operating system using os.name System property
+		String os = System.getProperty("os.name").toLowerCase();
+
+		if (os.contains("win")) {
+			return OS.WINDOWS;
+		}
+
+		else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+			return OS.LINUX;
+		}
+		return null;
+	}
+
+	private String getOSSpecificExecutableString(String executableString) {
+
+		if ((getOperatingSystem() == OS.WINDOWS)) {
+			return executableString + ".exe";
+		}
+		return executableString;
+	}
+	//		<CUSTOMISATION> ASHLING
 }
