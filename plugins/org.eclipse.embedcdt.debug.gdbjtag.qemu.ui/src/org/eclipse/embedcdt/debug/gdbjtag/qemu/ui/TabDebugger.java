@@ -60,6 +60,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
@@ -82,6 +83,13 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 	private ILaunchConfiguration fConfiguration;
 
+	// #298 Edit
+
+	private Combo fGdbArchitectureSelection;
+	private Combo fGdbBitSelection;
+	private String architecureArray[];
+	private String bitArray[];
+
 	private Text fGdbClientPathLabel;
 	private Text fGdbClientExecutable;
 	private Text fGdbClientOtherOptions;
@@ -91,8 +99,8 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 	private Text fGdbServerPathLabel;
 	private Link fLink;
 
-	private Button fEnableSemihosting;
-	private Text fSemihostingCmdline;
+	// private Button fEnableSemihosting;
+	// private Text fSemihostingCmdline;
 
 	private Button fDisableGraphics;
 
@@ -101,7 +109,7 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 	private Text fQemuBoardName;
 	private Text fQemuDeviceName;
-	private Button fIsQemuVerbose;
+	// private Button fIsQemuVerbose;
 
 	private Text fGdbServerGdbPort;
 
@@ -115,7 +123,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 	protected Button fUpdateThreadlistOnSuspend;
 
-	// TODO: check usage
 	protected String fSavedCmsisDeviceName;
 	protected String fSavedCmsisBoardName;
 
@@ -124,7 +131,25 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 	private DefaultPreferences fDefaultPreferences;
 	private PersistentPreferences fPersistentPreferences;
 
+	private static final String architectureArm = "Arm";
+	private static final String architectureRiscV = "RISC-V";
+
+	private static final String bit64 = "64";
+	private static final String bit32 = "32";
+	private static final String gdbServerExecutablePathArm32 = "${eclipse_home}/../qemu/qemu-system-arm";
+	private static final String gdbServerExecutablePathArm64 = "${eclipse_home}/../qemu/qemu-system-aarch64";
+	private static final String gdbServerExecutablePathRiscV32 = "${eclipse_home}/../qemu/qemu-system-riscv32";
+	private static final String gdbServerExecutablePathRiscV64 = "${eclipse_home}/../qemu/qemu-system-riscv64";
+	private static final String gdbClientExecutablePathRiscV32 = "${eclipse_home}/../toolchain/riscv64-unknown-elf/bin/riscv32-unknown-elf-gdb";
+	private static final String gdbClientExecutablePathRiscV64 = "${eclipse_home}/../toolchain/riscv64-unknown-elf/bin/riscv64-unknown-elf-gdb";
+	private static final String gdbClientExecutablePathArm = "${eclipse_home}/../toolchain/ARM/arm-none-eabi/bin/arm-none-eabi-gdb";
+
 	// ------------------------------------------------------------------------
+
+	//		<CUSTOMISATION> ASHLING
+	public enum OS {
+		WINDOWS, LINUX
+	}
 
 	protected TabDebugger(TabStartup tabStartup) {
 		super();
@@ -135,6 +160,8 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 		fDefaultPreferences = Activator.getInstance().getDefaultPreferences();
 		fPersistentPreferences = Activator.getInstance().getPersistentPreferences();
 	}
+
+	//		<CUSTOMISATION> ASHLING
 
 	@Override
 	public String getName() {
@@ -270,6 +297,37 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			fDoStartGdbServer.setLayoutData(gd);
 		}
 
+		// ASHING - CUSTOMIZATION : Architecture and Bit selection combo boxes
+		{
+			Label label = new Label(comp, SWT.NONE);
+			label.setText(Messages.getString("DebuggerTab.gdbServerArchitectureSelection_Label")); //$NON-NLS-1$
+			label.setToolTipText(Messages.getString("DebuggerTab.gdbServerArchitectureSelection_ToolTipText"));
+
+			Composite local = new Composite(comp, SWT.NONE);
+			GridLayout layout = new GridLayout();
+			layout.numColumns = 2;
+			layout.marginHeight = 0;
+			layout.marginWidth = 0;
+			local.setLayout(layout);
+			GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+			gd.horizontalSpan = ((GridLayout) comp.getLayout()).numColumns - 1;
+			local.setLayoutData(gd);
+			{
+				fGdbArchitectureSelection = new Combo(local, SWT.DROP_DOWN | SWT.READ_ONLY);
+				architecureArray = new String[] { architectureRiscV, architectureArm };
+				fGdbArchitectureSelection.setItems(architecureArray);
+				fGdbArchitectureSelection.select(0);
+
+				fGdbBitSelection = new Combo(local, SWT.DROP_DOWN | SWT.READ_ONLY);
+
+				bitArray = new String[] { bit32, bit64 };
+
+				fGdbBitSelection.setItems(bitArray);
+				fGdbBitSelection.select(0);
+			}
+
+		}
+		// ASHING - CUSTOMIZATION : Architecture and Bit selection combo boxes
 		{
 			Label label = new Label(comp, SWT.NONE);
 			label.setText(Messages.getString("DebuggerTab.gdbServerExecutable_Label"));
@@ -392,12 +450,16 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			gd.horizontalSpan = ((GridLayout) comp.getLayout()).numColumns;
 			local.setLayoutData(gd);
 
-			fEnableSemihosting = new Button(local, SWT.CHECK);
-			fEnableSemihosting.setText(Messages.getString("DebuggerTab.enableSemihosting_Text"));
-			fEnableSemihosting.setToolTipText(Messages.getString("DebuggerTab.enableSemihosting_ToolTipText"));
-
-			gd = new GridData(GridData.FILL_HORIZONTAL);
-			fEnableSemihosting.setLayoutData(gd);
+			/*
+			 * fEnableSemihosting = new Button(local, SWT.CHECK);
+			 * fEnableSemihosting.setText(Messages.getString(
+			 * "DebuggerTab.enableSemihosting_Text"));
+			 * fEnableSemihosting.setToolTipText(Messages.getString(
+			 * "DebuggerTab.enableSemihosting_ToolTipText"));
+			 * 
+			 * gd = new GridData(GridData.FILL_HORIZONTAL);
+			 * fEnableSemihosting.setLayoutData(gd);
+			 */
 
 			fDisableGraphics = new Button(local, SWT.CHECK);
 			fDisableGraphics.setText(Messages.getString("DebuggerTab.disableGraphics_Text"));
@@ -407,21 +469,21 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			fDisableGraphics.setLayoutData(gd);
 		}
 
-		{
-			Label label = new Label(comp, SWT.NONE);
-			label.setText(Messages.getString("DebuggerTab.gdbSemihostingCmdline_Label")); //$NON-NLS-1$
-			label.setToolTipText(Messages.getString("DebuggerTab.gdbSemihostingCmdline_ToolTipText"));
-			GridData gd = new GridData();
-			gd.verticalAlignment = SWT.TOP;
-			label.setLayoutData(gd);
-
-			fSemihostingCmdline = new Text(comp, SWT.SINGLE | SWT.BORDER);
-			fSemihostingCmdline.setToolTipText(Messages.getString("DebuggerTab.gdbSemihostingCmdline_ToolTipText"));
-
-			gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-			gd.horizontalSpan = ((GridLayout) comp.getLayout()).numColumns - 1;
-			fSemihostingCmdline.setLayoutData(gd);
-		}
+		/*
+		 * { Label label = new Label(comp, SWT.NONE);
+		 * label.setText(Messages.getString("DebuggerTab.gdbSemihostingCmdline_Label"));
+		 * //$NON-NLS-1$ label.setToolTipText(Messages.getString(
+		 * "DebuggerTab.gdbSemihostingCmdline_ToolTipText")); GridData gd = new
+		 * GridData(); gd.verticalAlignment = SWT.TOP; label.setLayoutData(gd);
+		 * 
+		 * fSemihostingCmdline = new Text(comp, SWT.SINGLE | SWT.BORDER);
+		 * fSemihostingCmdline.setToolTipText(Messages.getString(
+		 * "DebuggerTab.gdbSemihostingCmdline_ToolTipText"));
+		 * 
+		 * gd = new GridData(SWT.FILL, SWT.FILL, true, true); gd.horizontalSpan =
+		 * ((GridLayout) comp.getLayout()).numColumns - 1;
+		 * fSemihostingCmdline.setLayoutData(gd); }
+		 */
 
 		{
 			Composite local = new Composite(comp, SWT.NONE);
@@ -441,16 +503,59 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 					.setToolTipText(Messages.getString("DebuggerTab.gdbServerAllocateConsole_ToolTipText"));
 			gd = new GridData(GridData.FILL_HORIZONTAL);
 			fDoGdbServerAllocateConsole.setLayoutData(gd);
-
-			fIsQemuVerbose = new Button(local, SWT.CHECK);
-			fIsQemuVerbose.setText(Messages.getString("DebuggerTab.gdbServerVerbose_Label"));
-			fIsQemuVerbose.setToolTipText(Messages.getString("DebuggerTab.gdbServerVerbose_ToolTipText"));
-
-			gd = new GridData(GridData.FILL_HORIZONTAL);
-			fIsQemuVerbose.setLayoutData(gd);
+			/*
+			 * fIsQemuVerbose = new Button(local, SWT.CHECK);
+			 * fIsQemuVerbose.setText(Messages.getString(
+			 * "DebuggerTab.gdbServerVerbose_Label"));
+			 * fIsQemuVerbose.setToolTipText(Messages.getString(
+			 * "DebuggerTab.gdbServerVerbose_ToolTipText"));
+			 * 
+			 * gd = new GridData(GridData.FILL_HORIZONTAL);
+			 * fIsQemuVerbose.setLayoutData(gd);
+			 */
 		}
 
 		// ----- Actions ------------------------------------------------------
+
+		// <CUSTOMISATION> ASHLING -Default value of all other options (like Board name,
+		// Device name etc) will be set based on this selection.
+		ModifyListener scheduleUpdateDevicesModifyListener = new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+
+				if (architecureArray[fGdbArchitectureSelection.getSelectionIndex()].equals(architectureArm)) {
+					fQemuBoardName.setText(DefaultPreferences.QEMU_BOARD_NAME_ARM_DEFAULT);
+					fGdbClientOtherCommands.setText(Messages.getString("DebuggerTab.CLIENT_COMMANDS_DEFAULT_ARM"));
+
+					if (bitArray[fGdbBitSelection.getSelectionIndex()].equals(bit32)) {
+
+						fGdbServerExecutable.setText(getOSSpecificExecutableString(gdbServerExecutablePathArm32));
+
+					} else {
+						fGdbServerExecutable.setText(getOSSpecificExecutableString(gdbServerExecutablePathArm64));
+					}
+					fGdbClientExecutable.setText(getOSSpecificExecutableString(gdbClientExecutablePathArm));
+				}
+
+				else {
+
+					fQemuBoardName.setText(DefaultPreferences.QEMU_BOARD_NAME_RISCV_DEFAULT);
+					fGdbClientOtherCommands.setText(Messages.getString("DebuggerTab.CLIENT_COMMANDS_DEFAULT_RISC"));
+
+					if (bitArray[fGdbBitSelection.getSelectionIndex()].equals(bit32)) {
+						fGdbServerExecutable.setText(getOSSpecificExecutableString(gdbServerExecutablePathRiscV32));
+						fGdbClientExecutable.setText(getOSSpecificExecutableString(gdbClientExecutablePathRiscV32));
+					} else {
+						fGdbServerExecutable.setText(getOSSpecificExecutableString(gdbServerExecutablePathRiscV64));
+						fGdbClientExecutable.setText(getOSSpecificExecutableString(gdbClientExecutablePathRiscV64));
+					}
+
+				}
+
+			}
+		};
+		// <CUSTOMISATION> ASHLING -Default value of all other options (like Board name,
+		// Device name etc) will be set based on this selection.
 
 		ModifyListener scheduleUpdateJobModifyListener = new ModifyListener() {
 			@Override
@@ -470,20 +575,21 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				doStartGdbServerChanged();
+
 				if (fDoStartGdbServer.getSelection()) {
 					fTargetIpAddress.setText(DefaultPreferences.REMOTE_IP_ADDRESS_LOCALHOST);
 				}
+
 				scheduleUpdateJob();
 			}
 		});
 
-		fEnableSemihosting.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				doEnableSemihostingChanged();
-				scheduleUpdateJob();
-			}
-		});
+		/*
+		 * fEnableSemihosting.addSelectionListener(new SelectionAdapter() {
+		 * 
+		 * @Override public void widgetSelected(SelectionEvent e) {
+		 * doEnableSemihostingChanged(); scheduleUpdateJob(); } });
+		 */
 
 		fDisableGraphics.addSelectionListener(scheduleUpdateJobSelectionAdapter);
 
@@ -558,11 +664,16 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 		fGdbServerOtherOptions.addModifyListener(scheduleUpdateJobModifyListener);
 
-		fSemihostingCmdline.addModifyListener(scheduleUpdateJobModifyListener);
+		// fSemihostingCmdline.addModifyListener(scheduleUpdateJobModifyListener);
 
 		fDoGdbServerAllocateConsole.addSelectionListener(scheduleUpdateJobSelectionAdapter);
 
-		fIsQemuVerbose.addSelectionListener(scheduleUpdateJobSelectionAdapter);
+		// fIsQemuVerbose.addSelectionListener(scheduleUpdateJobSelectionAdapter);
+
+		// CUSTOMIZATION - ASHLING : Adding Event Listener for the architecture and bit combo box		
+		fGdbBitSelection.addModifyListener(scheduleUpdateDevicesModifyListener);
+		fGdbArchitectureSelection.addModifyListener(scheduleUpdateDevicesModifyListener);
+		// CUSTOMIZATION - ASHLING : Adding Event Listener for the architecture and bit combo box
 
 	}
 
@@ -774,6 +885,13 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 		fGdbServerPathLabel.setText(fullCommand);
 	}
 
+	private void updateGdbServerActualPathOnArchitecture() {
+
+		assert (fConfiguration != null);
+		String fullCommand = Configuration.getGdbServerCommand(fConfiguration, fGdbServerExecutable.getText());
+
+	}
+
 	private void updateGdbClientActualPath() {
 
 		assert (fConfiguration != null);
@@ -788,6 +906,11 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 		boolean enabled = fDoStartGdbServer.getSelection();
 
+		// <CUSTOMISATION> ASHLING
+		fGdbBitSelection.setEnabled(enabled);
+		fGdbArchitectureSelection.setEnabled(enabled);
+		// <CUSTOMISATION> ASHLING
+
 		fGdbServerExecutable.setEnabled(enabled);
 		fGdbServerBrowseButton.setEnabled(enabled);
 		fGdbServerVariablesButton.setEnabled(enabled);
@@ -795,13 +918,13 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 		fGdbServerGdbPort.setEnabled(enabled);
 
-		fEnableSemihosting.setEnabled(enabled);
-		fSemihostingCmdline.setEnabled(enabled && fEnableSemihosting.getSelection());
+		// fEnableSemihosting.setEnabled(enabled);
+		// fSemihostingCmdline.setEnabled(enabled && fEnableSemihosting.getSelection());
 		fDoGdbServerAllocateConsole.setEnabled(enabled);
 		fDisableGraphics.setEnabled(enabled);
 
 		fQemuBoardName.setEnabled(enabled);
-		fIsQemuVerbose.setEnabled(enabled);
+		// fIsQemuVerbose.setEnabled(enabled);
 
 		// Disable remote target params when the server is started
 		fTargetIpAddress.setEnabled(!enabled);
@@ -811,15 +934,16 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 		fLink.setEnabled(enabled);
 	}
 
-	private void doEnableSemihostingChanged() {
-		boolean enabled = fEnableSemihosting.getSelection();
-
-		fSemihostingCmdline.setEnabled(enabled);
-	}
+	/*
+	 * private void doEnableSemihostingChanged() { boolean enabled =
+	 * fEnableSemihosting.getSelection();
+	 * 
+	 * fSemihostingCmdline.setEnabled(enabled); }
+	 */
 
 	/**
 	 * Get the project name associated to this launch configuration.
-	 *
+	 * 
 	 * @param configuration
 	 * @return a String with the project name, or empty.
 	 */
@@ -858,6 +982,22 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 			// QEMU GDB server
 			{
+
+				// ASHLING CUSTOMIZATION - Setting values to the dropdown's from the saved
+				// configuration
+
+				// Architecture and Bit
+				stringDefault = fPersistentPreferences.getArchitecture();
+				fGdbArchitectureSelection.setText(
+						configuration.getAttribute(ConfigurationAttributes.GDB_SERVER_ARCHITECTURE, stringDefault));
+
+				stringDefault = fPersistentPreferences.getArchitectureBit();
+				fGdbBitSelection.setText(
+						configuration.getAttribute(ConfigurationAttributes.GDB_SERVER_ARCHITECTURE_BIT, stringDefault));
+
+				// ASHLING CUSTOMIZATION - Setting values to the dropdown's from the saved
+				// configuration
+
 				// Start server locally
 				booleanDefault = fPersistentPreferences.getGdbServerDoStart();
 				fDoStartGdbServer.setSelection(
@@ -898,13 +1038,18 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 						.setText(configuration.getAttribute(ConfigurationAttributes.GDB_SERVER_OTHER, stringDefault));
 
 				// Enable semihosting
-				booleanDefault = fPersistentPreferences.getQemuEnableSemihosting();
-				fEnableSemihosting.setSelection(
-						configuration.getAttribute(ConfigurationAttributes.ENABLE_SEMIHOSTING, booleanDefault));
+				/*
+				 * booleanDefault = fPersistentPreferences.getQemuEnableSemihosting();
+				 * fEnableSemihosting.setSelection(
+				 * configuration.getAttribute(ConfigurationAttributes.ENABLE_SEMIHOSTING,
+				 * booleanDefault));
+				 */
 
-				stringDefault = getProjectName(configuration);
-				fSemihostingCmdline.setText(
-						configuration.getAttribute(ConfigurationAttributes.SEMIHOSTING_CMDLINE, stringDefault));
+				/*
+				 * stringDefault = getProjectName(configuration); fSemihostingCmdline.setText(
+				 * configuration.getAttribute(ConfigurationAttributes.SEMIHOSTING_CMDLINE,
+				 * stringDefault));
+				 */
 
 				// Disable graphics
 				booleanDefault = fPersistentPreferences.getQemuDisableGraphics();
@@ -920,9 +1065,12 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 									DefaultPreferences.DO_GDB_SERVER_ALLOCATE_CONSOLE_DEFAULT));
 				}
 
-				booleanDefault = fPersistentPreferences.getQemuIsVerbose();
-				fIsQemuVerbose.setSelection(
-						configuration.getAttribute(ConfigurationAttributes.IS_GDB_SERVER_VERBOSE, booleanDefault));
+				/*
+				 * booleanDefault = fPersistentPreferences.getQemuIsVerbose();
+				 * fIsQemuVerbose.setSelection(
+				 * configuration.getAttribute(ConfigurationAttributes.IS_GDB_SERVER_VERBOSE,
+				 * booleanDefault));
+				 */
 
 			}
 
@@ -1007,7 +1155,7 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 				boardName = fSavedCmsisBoardName != null ? fSavedCmsisBoardName : "";
 				deviceName = fSavedCmsisDeviceName != null ? fSavedCmsisDeviceName : "";
 			} else {
-				boardName = DefaultPreferences.QEMU_BOARD_NAME_DEFAULT;
+				boardName = DefaultPreferences.QEMU_BOARD_NAME_RISCV_DEFAULT;
 				deviceName = DefaultPreferences.QEMU_DEVICE_NAME_DEFAULT;
 			}
 
@@ -1022,10 +1170,12 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			fGdbServerOtherOptions.setText(stringDefault);
 
 			// Enable semihosting
-			booleanDefault = fDefaultPreferences.getQemuEnableSemihosting();
-			fEnableSemihosting.setSelection(booleanDefault);
-
-			fSemihostingCmdline.setText(getProjectName(null));
+			/*
+			 * booleanDefault = fDefaultPreferences.getQemuEnableSemihosting();
+			 * fEnableSemihosting.setSelection(booleanDefault);
+			 * 
+			 * fSemihostingCmdline.setText(getProjectName(null));
+			 */
 
 			// Disable graphics
 			booleanDefault = fDefaultPreferences.getQemuDisableGraphics();
@@ -1038,7 +1188,7 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 				fDoGdbServerAllocateConsole.setSelection(DefaultPreferences.DO_GDB_SERVER_ALLOCATE_CONSOLE_DEFAULT);
 			}
 
-			fIsQemuVerbose.setSelection(DefaultPreferences.QEMU_IS_VERBOSE_DEFAULT);
+			// fIsQemuVerbose.setSelection(DefaultPreferences.QEMU_IS_VERBOSE_DEFAULT);
 		}
 
 		// GDB Client Setup
@@ -1066,7 +1216,7 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.eclipse.debug.ui.AbstractLaunchConfigurationTab#getId()
 	 */
 	@Override
@@ -1145,6 +1295,7 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 		return true;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
 
@@ -1163,6 +1314,19 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 		// QEMU server
 		{
+
+			// ASHLING CUSTOMIZATION -Retrieving selected data from combo box and saving in
+			// the configuration and persistance file
+			String selectedValue = architecureArray[fGdbArchitectureSelection.getSelectionIndex()];
+			configuration.setAttribute(ConfigurationAttributes.GDB_SERVER_ARCHITECTURE, selectedValue);
+			fPersistentPreferences.putQemuArchitecture(selectedValue);
+
+			selectedValue = bitArray[fGdbBitSelection.getSelectionIndex()];
+			configuration.setAttribute(ConfigurationAttributes.GDB_SERVER_ARCHITECTURE_BIT, selectedValue);
+			fPersistentPreferences.putQemuArchitectureBit(selectedValue);
+			// ASHLING CUSTOMIZATION -Retrieving selected data from combo box and saving in
+			// the configuration and persistance file
+
 			// Start server
 			booleanValue = fDoStartGdbServer.getSelection();
 			configuration.setAttribute(ConfigurationAttributes.DO_START_GDB_SERVER, booleanValue);
@@ -1198,13 +1362,16 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			fPersistentPreferences.putGdbServerOtherOptions(stringValue);
 
 			// Enable semihosting
-			booleanValue = fEnableSemihosting.getSelection();
-			configuration.setAttribute(ConfigurationAttributes.ENABLE_SEMIHOSTING, booleanValue);
-			fPersistentPreferences.putQemuEnableSemihosting(booleanValue);
-
-			// Semihosting command line
-			stringValue = fSemihostingCmdline.getText().trim();
-			configuration.setAttribute(ConfigurationAttributes.SEMIHOSTING_CMDLINE, stringValue);
+			/*
+			 * booleanValue = fEnableSemihosting.getSelection();
+			 * configuration.setAttribute(ConfigurationAttributes.ENABLE_SEMIHOSTING,
+			 * booleanValue); fPersistentPreferences.putQemuEnableSemihosting(booleanValue);
+			 * 
+			 * // Semihosting command line stringValue =
+			 * fSemihostingCmdline.getText().trim();
+			 * configuration.setAttribute(ConfigurationAttributes.SEMIHOSTING_CMDLINE,
+			 * stringValue);
+			 */
 
 			// Disable graphics
 			booleanValue = fDisableGraphics.getSelection();
@@ -1215,9 +1382,11 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			configuration.setAttribute(ConfigurationAttributes.DO_GDB_SERVER_ALLOCATE_CONSOLE,
 					fDoGdbServerAllocateConsole.getSelection());
 
-			booleanValue = fIsQemuVerbose.getSelection();
-			configuration.setAttribute(ConfigurationAttributes.IS_GDB_SERVER_VERBOSE, booleanValue);
-			fPersistentPreferences.putQemuIsVerbose(booleanValue);
+			/*
+			 * booleanValue = fIsQemuVerbose.getSelection();
+			 * configuration.setAttribute(ConfigurationAttributes.IS_GDB_SERVER_VERBOSE,
+			 * booleanValue); fPersistentPreferences.putQemuIsVerbose(booleanValue);
+			 */
 		}
 
 		// GDB client
@@ -1284,6 +1453,7 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
 
@@ -1374,4 +1544,30 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 	}
 
 	// ------------------------------------------------------------------------
+
+	//		<CUSTOMISATION> ASHLING
+	public static OS getOperatingSystem() {
+
+		// detecting the operating system using os.name System property
+		String os = System.getProperty("os.name").toLowerCase();
+
+		if (os.contains("win")) {
+			return OS.WINDOWS;
+		}
+
+		else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+			return OS.LINUX;
+		}
+		return null;
+	}
+
+	private String getOSSpecificExecutableString(String executableString) {
+
+		if ((getOperatingSystem() == OS.WINDOWS)) {
+			return executableString + ".exe";
+		}
+		return executableString;
+	}
+
+	//		<CUSTOMISATION> ASHLING
 }
