@@ -472,6 +472,7 @@ public class GnuMcuFinalLaunchSequence extends GDBJtagDSFFinalLaunchSequence {
 		}
 		rm.done();
 	}
+
 	// </CUSTOMIZATION>
 
 	// ------------------------------------------------------------------------
