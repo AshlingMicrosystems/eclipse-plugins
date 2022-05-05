@@ -79,30 +79,30 @@ public class Configuration {
 				return null;
 
 			String executable = getGdbServerCommand(configuration, null);
-			if (executable == null || executable.isEmpty())
+			if (executable == null || executable.length() == 0)
 				return null;
 
 			lst.add(executable);
 
 			// Added always, to get the 'Waiting for connection' message.
-			lst.add("--verbose");
+			//lst.add("--verbose");
 
-			if (configuration.getAttribute(ConfigurationAttributes.IS_GDB_SERVER_VERBOSE,
+			/*if (configuration.getAttribute(ConfigurationAttributes.IS_GDB_SERVER_VERBOSE,
 					DefaultPreferences.QEMU_IS_VERBOSE_DEFAULT)) {
 				lst.add("--verbose");
-			}
+			}*/
 
 			String boardName = configuration.getAttribute(ConfigurationAttributes.GDB_SERVER_BOARD_NAME, "").trim();
 			boardName = DebugUtils.resolveAll(boardName, configuration.getAttributes());
 			if (!boardName.isEmpty()) {
-				lst.add("--board");
+				lst.add("--machine");
 				lst.add(boardName);
 			}
 
 			String deviceName = configuration.getAttribute(ConfigurationAttributes.GDB_SERVER_DEVICE_NAME, "").trim();
 			deviceName = DebugUtils.resolveAll(deviceName, configuration.getAttributes());
 			if (!deviceName.isEmpty()) {
-				lst.add("--mcu");
+				lst.add("--cpu");
 				lst.add(deviceName);
 			}
 
@@ -126,22 +126,22 @@ public class Configuration {
 				lst.add("--nographic");
 			}
 
-			boolean isSemihosting = configuration.getAttribute(ConfigurationAttributes.ENABLE_SEMIHOSTING,
+			/*boolean isSemihosting = configuration.getAttribute(ConfigurationAttributes.ENABLE_SEMIHOSTING,
 					DefaultPreferences.ENABLE_SEMIHOSTING_DEFAULT);
-
+			
 			lst.add("--semihosting-config");
 			lst.add(isSemihosting ? "enable=on,target=native" : "enable=off,target=native");
-
+			
 			if (isSemihosting) {
 				String semihostingCmdline = configuration.getAttribute(ConfigurationAttributes.SEMIHOSTING_CMDLINE, "")
 						.trim();
-
+			
 				// This option must be the last one.
 				if (!semihostingCmdline.isEmpty()) {
 					lst.add("--semihosting-cmdline");
 					lst.addAll(StringUtils.splitCommandLineOptions(semihostingCmdline));
 				}
-			}
+			}*/
 
 		} catch (CoreException e) {
 			Activator.log(e);
@@ -204,7 +204,7 @@ public class Configuration {
 		List<String> lst = new ArrayList<>();
 
 		String executable = getGdbClientCommand(configuration, null);
-		if (executable == null || executable.isEmpty())
+		if (executable == null || executable.length() == 0)
 			return null;
 
 		lst.add(executable);
@@ -248,7 +248,7 @@ public class Configuration {
 	public static String resolveAll(String str, ILaunchConfiguration configuration) throws CoreException {
 		String value = str;
 		value = value.trim();
-		if (value.isEmpty())
+		if (value.length() == 0)
 			return null;
 
 		if (value.indexOf("${") >= 0) {

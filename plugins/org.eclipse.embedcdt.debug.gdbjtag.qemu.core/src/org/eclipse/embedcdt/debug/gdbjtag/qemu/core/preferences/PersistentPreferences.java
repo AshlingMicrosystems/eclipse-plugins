@@ -47,6 +47,11 @@ public class PersistentPreferences extends org.eclipse.embedcdt.debug.gdbjtag.co
 
 	public static final String GDB_QEMU_BOARD_NAME = GDB_QEMU + "boardName";
 
+	//ASHLING CUSTOMIZATION
+	public static final String GDB_QEMU_ARCHITECTURE = GDB_QEMU + "architecture";
+	public static final String GDB_QEMU_BIT = GDB_QEMU + "bit";
+	//ASHLING CUSTOMIZATION
+
 	public static final String GDB_QEMU_MACHINE_NAME = GDB_QEMU + "machineName";
 
 	public static final String GDB_QEMU_DEVICE_NAME = GDB_QEMU + "deviceName";
@@ -195,13 +200,46 @@ public class PersistentPreferences extends org.eclipse.embedcdt.debug.gdbjtag.co
 		if (value != null) {
 			return value;
 		}
-		return getString(GDB_QEMU_MACHINE_NAME, DefaultPreferences.QEMU_BOARD_NAME_DEFAULT);
+		return getString(GDB_QEMU_MACHINE_NAME, DefaultPreferences.QEMU_BOARD_NAME_RISCV_DEFAULT);
 	}
 
 	public void putQemuBoardName(String value) {
 
 		putWorkspaceString(GDB_QEMU_BOARD_NAME, value);
 	}
+
+	//ASHLING CUSTOMIZATION - methods for set and get saved configuration 
+
+	public String getArchitecture() {
+
+		String value = getString(GDB_QEMU_ARCHITECTURE, null);
+		if (value != null) {
+			return value;
+		}
+		return getString(GDB_QEMU_ARCHITECTURE, DefaultPreferences.QEMU_BOARD_ARCHITECTURE);
+
+	}
+
+	public void putQemuArchitecture(String value) {
+
+		putWorkspaceString(GDB_QEMU_ARCHITECTURE, value);
+	}
+
+	public String getArchitectureBit() {
+
+		String value = getString(GDB_QEMU_BIT, null);
+		if (value != null) {
+			return value;
+		}
+		return getString(GDB_QEMU_BIT, DefaultPreferences.QEMU_BOARD_BIT);
+
+	}
+
+	public void putQemuArchitectureBit(String value) {
+
+		putWorkspaceString(GDB_QEMU_BIT, value);
+	}
+	//ASHLING CUSTOMIZATION - methods for set and get saved configuration
 
 	// ----- QEMU device name ------------------------------------------------
 	public String getQemuDeviceName() {
