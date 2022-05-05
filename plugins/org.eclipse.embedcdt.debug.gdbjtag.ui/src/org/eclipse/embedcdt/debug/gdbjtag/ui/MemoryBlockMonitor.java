@@ -16,6 +16,9 @@
 
 package org.eclipse.embedcdt.debug.gdbjtag.ui;
 
+import org.eclipse.cdt.dsf.datamodel.DMContexts;
+import org.eclipse.cdt.dsf.debug.service.IMemory.IMemoryDMContext;
+import org.eclipse.cdt.dsf.debug.service.command.ICommandControlService.ICommandControlDMContext;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -31,6 +34,7 @@ import org.eclipse.debug.ui.memory.IMemoryRenderingType;
 import org.eclipse.embedcdt.debug.gdbjtag.core.datamodel.PeripheralDMContext;
 import org.eclipse.embedcdt.debug.gdbjtag.core.memory.PeripheralMemoryBlockExtension;
 import org.eclipse.embedcdt.debug.gdbjtag.core.memory.PeripheralMemoryBlockRetrieval;
+import org.eclipse.embedcdt.debug.gdbjtag.core.memory.PeripheralMemoryBlockRetrievalWrapper;
 import org.eclipse.embedcdt.internal.debug.gdbjtag.ui.Activator;
 import org.eclipse.embedcdt.internal.debug.gdbjtag.ui.Messages;
 import org.eclipse.embedcdt.internal.debug.gdbjtag.ui.preferences.PeripheralRendering;
@@ -87,10 +91,15 @@ public class MemoryBlockMonitor {
 		if (Activator.getInstance().isDebugging()) {
 			System.out.println("MemoryBlockMonitor.displayPeripheralMonitor(" + isChecked + ")");
 		}
-
-		Object object;
-		object = peripheralDMContext.getAdapter(PeripheralMemoryBlockRetrieval.class);
-
+		//<CUSTOMISATION - ASHLING> try to get PeripheralMemoryBlockRetrievalWrapper, which is used for heterogeneous launch git-lab#riscfree-ui#528
+		Object object = null;
+		PeripheralMemoryBlockRetrievalWrapper wraper = peripheralDMContext
+				.getAdapter(PeripheralMemoryBlockRetrievalWrapper.class);
+		object = wraper.getMemoryRetreival(DMContexts
+				.getAncestorOfType(peripheralDMContext, ICommandControlDMContext.class).getCommandControlId());
+		if (object == null) {
+			object = peripheralDMContext.getAdapter(PeripheralMemoryBlockRetrieval.class);
+		}
 		if ((object instanceof IMemoryBlockRetrieval)) {
 
 			final IMemoryBlockRetrieval memoryBlockRetrieval = (IMemoryBlockRetrieval) object;
@@ -191,6 +200,22 @@ public class MemoryBlockMonitor {
 
 		IMemoryBlock[] memoryBlocks = DebugPlugin.getDefault().getMemoryBlockManager().getMemoryBlocks();
 		for (IMemoryBlock memoryBlock : memoryBlocks) {
+			/*
+			 * <Ashling customization> - GitLab#528
+			 * Need to check the current context and memory block context
+			 * otherwise it will remove all the memoryblock with the selected name
+			 */
+			if (!DMContexts.getAncestorOfType(peripheralDMContext, ICommandControlDMContext.class).getCommandControlId()
+					.equals(DMContexts
+							.getAncestorOfType(((IMemoryDMContext) ((PeripheralMemoryBlockExtension) memoryBlock)
+									.getAdapter(IMemoryDMContext.class)), ICommandControlDMContext.class)
+							.getCommandControlId())) {
+
+				continue;
+			}
+			/*
+			 * <Ashling customization> - GitLab#528
+			 */
 
 			if ((memoryBlock instanceof PeripheralMemoryBlockExtension)) {
 

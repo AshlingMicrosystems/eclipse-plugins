@@ -22,12 +22,18 @@ import org.eclipse.debug.internal.ui.viewers.model.provisional.IPresentationCont
 import org.eclipse.embedcdt.debug.gdbjtag.ui.viewmodel.peripherals.PeripheralsVMProvider;
 import org.eclipse.embedcdt.internal.debug.gdbjtag.ui.render.peripherals.PeripheralsView;
 
+import com.ashling.riscfree.debug.cacheview.ui.dsf.CacheViewVMProvider;
+import com.ashling.riscfree.debug.cacheview.ui.view.CacheView;
+import com.ashling.riscfree.debug.cacheview.ui.view.TLBView;
+import com.ashling.riscfree.globalvariable.view.dsf.ui.GlobalVariableVMProvider;
+import com.ashling.riscfree.globalvariable.view.views.GlobalVariablesView;
+
 @SuppressWarnings("restriction")
 public class GnuMcuViewModelAdapter extends GdbViewModelAdapter {
 
 	// ------------------------------------------------------------------------
 
-	GnuMcuViewModelAdapter(DsfSession session, SteppingController controller) {
+	protected GnuMcuViewModelAdapter(DsfSession session, SteppingController controller) {
 
 		// Parent will register IColumnPresentationFactory as modelAdapter
 		super(session, controller);
@@ -40,6 +46,15 @@ public class GnuMcuViewModelAdapter extends GdbViewModelAdapter {
 		if (PeripheralsView.PRESENTATION_CONTEXT_ID.equals(context.getId())) {
 			return new PeripheralsVMProvider(this, context, getSession());
 		}
+
+		// <CUSTOMIZATION - ASHLING>
+		if (GlobalVariablesView.GLOBAL_VARIABLE_VIEW.equals(context.getId())) {
+			return new GlobalVariableVMProvider(this, context, getSession());
+		}
+		if (CacheView.ID_VIEW_CACHE.equals(context.getId()) || TLBView.ID_VIEW_TLB.equals(context.getId())) {
+			return new CacheViewVMProvider(this, context, getSession());
+		}
+		// </CUSTOMIZATION>
 
 		// For all others, refer them to the parent class.
 		return super.createViewModelProvider(context);
