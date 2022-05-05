@@ -142,7 +142,7 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 	private static final String gdbServerExecutablePathRiscV64 = "${eclipse_home}/../qemu/qemu-system-riscv64";
 	private static final String gdbClientExecutablePathRiscV32 = "${eclipse_home}/../toolchain/riscv64-unknown-elf/bin/riscv32-unknown-elf-gdb";
 	private static final String gdbClientExecutablePathRiscV64 = "${eclipse_home}/../toolchain/riscv64-unknown-elf/bin/riscv64-unknown-elf-gdb";
-	private static final String gdbClientExecutablePathArm = "${eclipse_home}/../toolchain/ARM/arm-none-eabi/bin/arm-none-eabi-gdb";
+	private static final String gdbClientExecutablePathArm = "${eclipse_home}/../toolchain/Arm/arm-none-eabi/bin/arm-none-eabi-gdb";
 
 	// ------------------------------------------------------------------------
 
@@ -456,7 +456,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			 * "DebuggerTab.enableSemihosting_Text"));
 			 * fEnableSemihosting.setToolTipText(Messages.getString(
 			 * "DebuggerTab.enableSemihosting_ToolTipText"));
-			 * 
 			 * gd = new GridData(GridData.FILL_HORIZONTAL);
 			 * fEnableSemihosting.setLayoutData(gd);
 			 */
@@ -475,11 +474,10 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 		 * //$NON-NLS-1$ label.setToolTipText(Messages.getString(
 		 * "DebuggerTab.gdbSemihostingCmdline_ToolTipText")); GridData gd = new
 		 * GridData(); gd.verticalAlignment = SWT.TOP; label.setLayoutData(gd);
-		 * 
 		 * fSemihostingCmdline = new Text(comp, SWT.SINGLE | SWT.BORDER);
 		 * fSemihostingCmdline.setToolTipText(Messages.getString(
 		 * "DebuggerTab.gdbSemihostingCmdline_ToolTipText"));
-		 * 
+		 *
 		 * gd = new GridData(SWT.FILL, SWT.FILL, true, true); gd.horizontalSpan =
 		 * ((GridLayout) comp.getLayout()).numColumns - 1;
 		 * fSemihostingCmdline.setLayoutData(gd); }
@@ -509,7 +507,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			 * "DebuggerTab.gdbServerVerbose_Label"));
 			 * fIsQemuVerbose.setToolTipText(Messages.getString(
 			 * "DebuggerTab.gdbServerVerbose_ToolTipText"));
-			 * 
 			 * gd = new GridData(GridData.FILL_HORIZONTAL);
 			 * fIsQemuVerbose.setLayoutData(gd);
 			 */
@@ -586,7 +583,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 		/*
 		 * fEnableSemihosting.addSelectionListener(new SelectionAdapter() {
-		 * 
 		 * @Override public void widgetSelected(SelectionEvent e) {
 		 * doEnableSemihostingChanged(); scheduleUpdateJob(); } });
 		 */
@@ -670,7 +666,7 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 		// fIsQemuVerbose.addSelectionListener(scheduleUpdateJobSelectionAdapter);
 
-		// CUSTOMIZATION - ASHLING : Adding Event Listener for the architecture and bit combo box		
+		// CUSTOMIZATION - ASHLING : Adding Event Listener for the architecture and bit combo box
 		fGdbBitSelection.addModifyListener(scheduleUpdateDevicesModifyListener);
 		fGdbArchitectureSelection.addModifyListener(scheduleUpdateDevicesModifyListener);
 		// CUSTOMIZATION - ASHLING : Adding Event Listener for the architecture and bit combo box
@@ -937,7 +933,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 	/*
 	 * private void doEnableSemihostingChanged() { boolean enabled =
 	 * fEnableSemihosting.getSelection();
-	 * 
 	 * fSemihostingCmdline.setEnabled(enabled); }
 	 */
 
@@ -1173,7 +1168,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			/*
 			 * booleanDefault = fDefaultPreferences.getQemuEnableSemihosting();
 			 * fEnableSemihosting.setSelection(booleanDefault);
-			 * 
 			 * fSemihostingCmdline.setText(getProjectName(null));
 			 */
 
@@ -1366,7 +1360,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			 * booleanValue = fEnableSemihosting.getSelection();
 			 * configuration.setAttribute(ConfigurationAttributes.ENABLE_SEMIHOSTING,
 			 * booleanValue); fPersistentPreferences.putQemuEnableSemihosting(booleanValue);
-			 * 
 			 * // Semihosting command line stringValue =
 			 * fSemihostingCmdline.getText().trim();
 			 * configuration.setAttribute(ConfigurationAttributes.SEMIHOSTING_CMDLINE,
