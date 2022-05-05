@@ -32,4 +32,12 @@ public interface ConfigurationAttributes {
 	public static final String ATTR_JTAG_DEVICE = "org.eclipse.cdt.debug.gdbjtag.core.jtagDevice"; //$NON-NLS-1$
 
 	// ------------------------------------------------------------------------
+
+	// <CUSTOMIZATION - ASHLING>
+	// RTOS attributes are defined in the subclass com.ashling.riscfree.debug.opxd.core.ConfigurationAttributes
+	// also. Any changes to these should be updated there also.
+	public static final String RTOS_DEBUG = "com.ashling.riscfree.debug.opxd.core.isRTOSDebug";
+	public static final String RTOS_TYPE = "com.ashling.riscfree.debug.opxd.core.rtosType";
+	public static final String RTOS_VERSION = "com.ashling.riscfree.debug.opxd.core.rtosVersion";
+	// <CUSTOMIZATION>
 }
