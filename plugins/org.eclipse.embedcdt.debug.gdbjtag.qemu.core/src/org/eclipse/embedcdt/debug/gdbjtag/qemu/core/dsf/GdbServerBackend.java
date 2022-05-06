@@ -139,7 +139,9 @@ public class GdbServerBackend extends GnuMcuGdbServerBackend {
 
 	@Override
 	public boolean canMatchStdOut() {
-		return true;
+		//TODO : Ashling Need to double check. Duding changing to embed-cdt, seen this is returning false in Ashling repo, so maintained the same
+		//Embed CDT, returning true
+		return false;
 	}
 
 	@Override
