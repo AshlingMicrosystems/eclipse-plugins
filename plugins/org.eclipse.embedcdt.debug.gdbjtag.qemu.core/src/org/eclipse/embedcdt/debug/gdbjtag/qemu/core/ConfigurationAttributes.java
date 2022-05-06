@@ -31,6 +31,11 @@ public interface ConfigurationAttributes extends org.eclipse.embedcdt.debug.gdbj
 	public static final String GDB_SERVER_MACHINE_NAME = PREFIX + ".gdbServerMachineName"; //$NON-NLS-1$
 	public static final String GDB_SERVER_BOARD_NAME = PREFIX + ".gdbServerBoardName"; //$NON-NLS-1$
 
+	//ASHLING CUSTOMIZATION - Adding configuration attributes for architecture and bit
+	public static final String GDB_SERVER_ARCHITECTURE = PREFIX + ".gdbServerArchitecture";
+	public static final String GDB_SERVER_ARCHITECTURE_BIT = PREFIX + ".gdbServerArchitectureBit";
+	//ASHLING CUSTOMIZATION - Adding configuration attributes for architecture and bit
+
 	public static final String GDB_SERVER_DEVICE_NAME = PREFIX + ".gdbServerDeviceName"; //$NON-NLS-1$
 
 	public static final String GDB_SERVER_GDB_PORT_NUMBER = PREFIX + ".gdbServerGdbPortNumber"; //$NON-NLS-1$
