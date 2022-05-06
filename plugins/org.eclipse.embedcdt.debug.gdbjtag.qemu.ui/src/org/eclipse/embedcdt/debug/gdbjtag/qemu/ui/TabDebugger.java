@@ -456,7 +456,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			 * "DebuggerTab.enableSemihosting_Text"));
 			 * fEnableSemihosting.setToolTipText(Messages.getString(
 			 * "DebuggerTab.enableSemihosting_ToolTipText"));
-			 *
 			 * gd = new GridData(GridData.FILL_HORIZONTAL);
 			 * fEnableSemihosting.setLayoutData(gd);
 			 */
@@ -475,7 +474,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 		 * //$NON-NLS-1$ label.setToolTipText(Messages.getString(
 		 * "DebuggerTab.gdbSemihostingCmdline_ToolTipText")); GridData gd = new
 		 * GridData(); gd.verticalAlignment = SWT.TOP; label.setLayoutData(gd);
-		 *
 		 * fSemihostingCmdline = new Text(comp, SWT.SINGLE | SWT.BORDER);
 		 * fSemihostingCmdline.setToolTipText(Messages.getString(
 		 * "DebuggerTab.gdbSemihostingCmdline_ToolTipText"));
@@ -509,7 +507,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			 * "DebuggerTab.gdbServerVerbose_Label"));
 			 * fIsQemuVerbose.setToolTipText(Messages.getString(
 			 * "DebuggerTab.gdbServerVerbose_ToolTipText"));
-			 *
 			 * gd = new GridData(GridData.FILL_HORIZONTAL);
 			 * fIsQemuVerbose.setLayoutData(gd);
 			 */
@@ -586,7 +583,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 		/*
 		 * fEnableSemihosting.addSelectionListener(new SelectionAdapter() {
-		 *
 		 * @Override public void widgetSelected(SelectionEvent e) {
 		 * doEnableSemihostingChanged(); scheduleUpdateJob(); } });
 		 */
@@ -937,13 +933,12 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 	/*
 	 * private void doEnableSemihostingChanged() { boolean enabled =
 	 * fEnableSemihosting.getSelection();
-	 *
 	 * fSemihostingCmdline.setEnabled(enabled); }
 	 */
 
 	/**
 	 * Get the project name associated to this launch configuration.
-	 *
+	 * 
 	 * @param configuration
 	 * @return a String with the project name, or empty.
 	 */
@@ -1173,7 +1168,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			/*
 			 * booleanDefault = fDefaultPreferences.getQemuEnableSemihosting();
 			 * fEnableSemihosting.setSelection(booleanDefault);
-			 *
 			 * fSemihostingCmdline.setText(getProjectName(null));
 			 */
 
@@ -1216,7 +1210,7 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.eclipse.debug.ui.AbstractLaunchConfigurationTab#getId()
 	 */
 	@Override
@@ -1366,7 +1360,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			 * booleanValue = fEnableSemihosting.getSelection();
 			 * configuration.setAttribute(ConfigurationAttributes.ENABLE_SEMIHOSTING,
 			 * booleanValue); fPersistentPreferences.putQemuEnableSemihosting(booleanValue);
-			 *
 			 * // Semihosting command line stringValue =
 			 * fSemihostingCmdline.getText().trim();
 			 * configuration.setAttribute(ConfigurationAttributes.SEMIHOSTING_CMDLINE,
