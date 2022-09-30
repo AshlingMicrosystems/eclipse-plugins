@@ -27,6 +27,8 @@ import com.ashling.riscfree.debug.cacheview.ui.view.CacheView;
 import com.ashling.riscfree.debug.cacheview.ui.view.TLBView;
 import com.ashling.riscfree.globalvariable.view.dsf.ui.GlobalVariableVMProvider;
 import com.ashling.riscfree.globalvariable.view.views.GlobalVariablesView;
+import com.ashling.riscfree.trace.ui.dsf.TraceViewVMProvider;
+import com.ashling.riscfree.trace.ui.view.TraceView;
 
 @SuppressWarnings("restriction")
 public class GnuMcuViewModelAdapter extends GdbViewModelAdapter {
@@ -53,6 +55,9 @@ public class GnuMcuViewModelAdapter extends GdbViewModelAdapter {
 		}
 		if (CacheView.ID_VIEW_CACHE.equals(context.getId()) || TLBView.ID_VIEW_TLB.equals(context.getId())) {
 			return new CacheViewVMProvider(this, context, getSession());
+		}
+		if (TraceView.ID_VIEW_TRACE.equals(context.getId())) {
+			return new TraceViewVMProvider(this, context, getSession());
 		}
 		// </CUSTOMIZATION>
 
