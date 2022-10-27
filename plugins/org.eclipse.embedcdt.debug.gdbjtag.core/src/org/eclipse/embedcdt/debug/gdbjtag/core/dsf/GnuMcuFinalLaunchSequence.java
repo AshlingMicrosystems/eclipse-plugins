@@ -14,53 +14,36 @@
 
 package org.eclipse.embedcdt.debug.gdbjtag.core.dsf;
 
-import java.io.File;
-import java.net.URL;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.cdt.debug.core.CDebugUtils;
 import org.eclipse.cdt.debug.gdbjtag.core.GDBJtagDSFFinalLaunchSequence;
 import org.eclipse.cdt.debug.gdbjtag.core.jtagdevice.DefaultGDBJtagDeviceImpl;
 import org.eclipse.cdt.debug.gdbjtag.core.jtagdevice.IGDBJtagDevice;
-import org.eclipse.cdt.dsf.concurrent.DataRequestMonitor;
 import org.eclipse.cdt.dsf.concurrent.RequestMonitor;
 import org.eclipse.cdt.dsf.concurrent.RequestMonitorWithProgress;
 import org.eclipse.cdt.dsf.gdb.launching.GdbLaunch;
 import org.eclipse.cdt.dsf.gdb.service.IGDBBackend;
 import org.eclipse.cdt.dsf.gdb.service.command.IGDBControl;
 import org.eclipse.cdt.dsf.mi.service.IMIProcesses;
-import org.eclipse.cdt.dsf.mi.service.command.output.MIInfo;
 import org.eclipse.cdt.dsf.service.DsfServicesTracker;
 import org.eclipse.cdt.dsf.service.DsfSession;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.embedcdt.debug.gdbjtag.core.ConfigurationAttributes;
 import org.eclipse.embedcdt.debug.gdbjtag.core.DebugUtils;
 import org.eclipse.embedcdt.debug.gdbjtag.core.services.IGnuMcuDebuggerCommandsService;
 import org.eclipse.embedcdt.debug.gdbjtag.core.services.IPeripheralMemoryService;
 import org.eclipse.embedcdt.debug.gdbjtag.core.services.IPeripheralsService;
 import org.eclipse.embedcdt.internal.debug.gdbjtag.core.Activator;
 
-import com.ashling.riscfree.globalvariable.view.dsf.IGlobalVariableService;
-
 public class GnuMcuFinalLaunchSequence extends GDBJtagDSFFinalLaunchSequence {
 
 	// ------------------------------------------------------------------------
-	// <CUSTOMIZATION - ASHLING>
-	// The below constants are used in
-	// com.ashling.riscfree.debug.opxd.core.utils.ConfigurationHelper for Ashling launches also.
-	// So any updates to these constants should be done in both classes.
-	// <CUSTOMIZATION>
-	private static final String RTOS_SCRIPT_FOLDER_NAME = "RTOS";
-	private static final String SCRIPT_FOLDER_NAME = "scripts";
-	private static final String GDB_SUPPORT_SCRIPTS_FOLDER_NAME = "gdb-support-scripts";
+
 	private Map<String, Object> fAttributes;
 	private DsfSession fSession;
 
@@ -76,7 +59,7 @@ public class GnuMcuFinalLaunchSequence extends GDBJtagDSFFinalLaunchSequence {
 	// ------------------------------------------------------------------------
 
 	private String[] topPreInitSteps = { "stepCreatePeripheralService", "stepCreatePeripheralMemoryService",
-			"stepCreateDebuggerCommandsService", "stepStartGlobalVariableService" };
+			"stepCreateDebuggerCommandsService" };
 
 	private String[] topToRemove = { "stepRemoteConnection", "stepAttachToProcess" };
 
@@ -142,7 +125,6 @@ public class GnuMcuFinalLaunchSequence extends GDBJtagDSFFinalLaunchSequence {
 
 			// Insert our steps right before the existing steps.
 			orderList.addAll(orderList.indexOf("stepJTAGCleanup"), Arrays.asList(jtagStartStep));
-			orderList.add("stepSourceRTOSGDBScript");
 
 		}
 
@@ -418,61 +400,6 @@ public class GnuMcuFinalLaunchSequence extends GDBJtagDSFFinalLaunchSequence {
 			rm.done();
 		}
 	}
-
-	// <CUSTOMIZATION - ASHLING>
-	@Execute
-	public void stepStartGlobalVariableService(final RequestMonitor rm) {
-		GdbLaunch launch = ((GdbLaunch) this.fSession.getModelAdapter(ILaunch.class));
-		IGlobalVariableService globalVariableService = launch.getServiceFactory()
-				.createService(IGlobalVariableService.class, launch.getSession());
-		if (Activator.getInstance().isDebugging()) {
-			System.out.println("GnuMcuFinalLaunchSequence.stepStartGlobalVariableService() " + globalVariableService);
-		}
-		if (globalVariableService != null) {
-			globalVariableService.initialize(rm);
-		} else {
-			rm.setStatus(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Unable to start GlobalVariableService"));
-			rm.done();
-		}
-
-	}
-
-	@Execute
-	public void stepSourceRTOSGDBScript(final RequestMonitor rm) {
-		if (CDebugUtils.getAttribute(fAttributes, ConfigurationAttributes.RTOS_DEBUG, false)) {
-			String rtosType = CDebugUtils.getAttribute(fAttributes, ConfigurationAttributes.RTOS_TYPE, "");
-			String rtosVersion = CDebugUtils.getAttribute(fAttributes, ConfigurationAttributes.RTOS_VERSION, "");
-			try {
-				URL url = Platform.getInstallLocation().getURL();
-				File installationLocation = url == null ? new File(".") : new File(url.getPath()).getParentFile();
-				if (installationLocation != null) {
-					File rtosGDBSupportScriptLocation = new File(Paths
-							.get(installationLocation.getAbsolutePath(), SCRIPT_FOLDER_NAME, RTOS_SCRIPT_FOLDER_NAME,
-									rtosType, GDB_SUPPORT_SCRIPTS_FOLDER_NAME, rtosVersion)
-							.toAbsolutePath().toString());
-					if (rtosGDBSupportScriptLocation.exists() && rtosGDBSupportScriptLocation.isDirectory()
-							&& rtosGDBSupportScriptLocation.listFiles().length > 0) {
-						fCommandControl.queueCommand(
-								fCommandControl.getCommandFactory().createCLISource(fCommandControl.getContext(),
-										rtosGDBSupportScriptLocation.listFiles()[0].getAbsolutePath()),
-								new DataRequestMonitor<MIInfo>(getExecutor(), rm) {
-									@Override
-									protected void handleCompleted() {
-										rm.done();
-									}
-								});
-						return;
-					}
-				} else {
-					Activator.log("No folder named rtos in the installation location");
-				}
-			} catch (Exception e) {
-				Activator.log(e);
-			}
-		}
-		rm.done();
-	}
-	// </CUSTOMIZATION>
 
 	// ------------------------------------------------------------------------
 }

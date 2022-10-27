@@ -25,6 +25,7 @@ import org.eclipse.cdt.dsf.debug.service.IMemory;
 import org.eclipse.cdt.dsf.debug.service.IMemory.IMemoryDMContext;
 import org.eclipse.cdt.dsf.debug.service.IRunControl.IExitedDMEvent;
 import org.eclipse.cdt.dsf.gdb.internal.GdbPlugin;
+import org.eclipse.cdt.dsf.internal.DsfPlugin;
 import org.eclipse.cdt.dsf.service.DsfServiceEventHandler;
 import org.eclipse.cdt.dsf.service.DsfSession;
 import org.eclipse.core.runtime.CoreException;
@@ -34,6 +35,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IMemoryBlockExtension;
 import org.eclipse.embedcdt.debug.gdbjtag.core.datamodel.PeripheralDMContext;
@@ -89,14 +91,10 @@ public class PeripheralMemoryBlockRetrieval extends DsfMemoryBlockRetrieval {
 
 	public List<String> getPersistentPeripherals() {
 
-		/*
-		 * <Ashling-customization>-GitLab-#528
-		 * Removing read memento since core specific persistence is not implemented
-		 *
-		 * if (Activator.getInstance().isDebugging()) {
+		if (Activator.getInstance().isDebugging()) {
 			System.out.println("PeripheralMemoryBlockRetrieval.getPersistentPeripherals()");
 		}
-		
+
 		if (fPersistentPeripherals == null) {
 			String memento;
 			try {
@@ -108,17 +106,13 @@ public class PeripheralMemoryBlockRetrieval extends DsfMemoryBlockRetrieval {
 					fPersistentPeripherals = parsePeripheralsMemento(memento);
 				}
 			} catch (CoreException e) {
-		
+
 			}
 			if (fPersistentPeripherals == null) {
 				fPersistentPeripherals = new ArrayList<>();
 			}
 		}
 		return fPersistentPeripherals;
-
-		*
-		*/
-		return new ArrayList<>();
 	}
 
 	@Override
@@ -182,49 +176,25 @@ public class PeripheralMemoryBlockRetrieval extends DsfMemoryBlockRetrieval {
 	@Override
 	public void saveMemoryBlocks() {
 
-		/*
-		 * <Ashling customization> - GitLab#528
-		 *
-		 * No need to save the peripheral persistence and memory block persistence
-		 * since the AHMD launch doesn't support the core specific persistence
-		
-		
 		if (Activator.getInstance().isDebugging()) {
 			System.out.println("PeripheralMemoryBlockRetrieval.saveMemoryBlocks()");
 		}
-		
+
 		try {
 			ILaunchConfigurationWorkingCopy wc = fLaunchConfig.getWorkingCopy();
-		
+
 			if (fPersistentPeripherals != null) {
 				// Save peripherals only if the Peripherals view was used,
 				// otherwise leave them as before.
 				wc.setAttribute(PERIPHERALS_MEMENTO_ID, getPeripheralsMemento());
-			try {
-				ILaunchConfigurationWorkingCopy wc = fLaunchConfig.getWorkingCopy();
-		
-				if (fPersistentPeripherals != null) {
-					// Save peripherals only if the Peripherals view was used,
-					// otherwise leave them as before.
-					wc.setAttribute(PERIPHERALS_MEMENTO_ID, getPeripheralsMemento());
-				}
-		
-				wc.setAttribute(ATTR_DEBUGGER_MEMORY_BLOCKS, getMemoryMemento());
-		
-				wc.doSave();
-			} catch (CoreException e) {
-				DsfPlugin.getDefault().getLog().log(e.getStatus());
 			}
-		
+
 			wc.setAttribute(ATTR_DEBUGGER_MEMORY_BLOCKS, getMemoryMemento());
-		
+
 			wc.doSave();
 		} catch (CoreException e) {
 			DsfPlugin.getDefault().getLog().log(e.getStatus());
 		}
-		*
-		*<Ashling customization> - GitLab#528
-		*/
 	}
 
 	/**
