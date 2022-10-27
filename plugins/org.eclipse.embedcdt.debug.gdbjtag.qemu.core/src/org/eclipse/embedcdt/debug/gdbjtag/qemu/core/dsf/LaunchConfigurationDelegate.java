@@ -18,8 +18,10 @@ package org.eclipse.embedcdt.debug.gdbjtag.qemu.core.dsf;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.cdt.dsf.concurrent.DataRequestMonitor;
+import org.eclipse.cdt.dsf.concurrent.DefaultDsfExecutor;
 import org.eclipse.cdt.dsf.concurrent.ImmediateExecutor;
 import org.eclipse.cdt.dsf.concurrent.Query;
 import org.eclipse.cdt.dsf.concurrent.RequestMonitorWithProgress;
@@ -42,6 +44,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
@@ -71,9 +74,6 @@ public class LaunchConfigurationDelegate extends AbstractGnuMcuLaunchConfigurati
 	@SuppressWarnings("unused")
 	private boolean fIsNonStopSession = false;
 	private boolean fDoStartGdbServer = false;
-
-	protected String fPrefix = "";
-	protected boolean fHasLegacyOptions = true;
 
 	// ------------------------------------------------------------------------
 
@@ -139,7 +139,7 @@ public class LaunchConfigurationDelegate extends AbstractGnuMcuLaunchConfigurati
 	 * The main reason for this is the custom launchDebugSession().
 	 */
 	@Override
-	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor)
+	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, final IProgressMonitor monitor)
 			throws CoreException {
 
 		if (Activator.getInstance().isDebugging()) {
@@ -147,13 +147,33 @@ public class LaunchConfigurationDelegate extends AbstractGnuMcuLaunchConfigurati
 					.println("qemu.LaunchConfigurationDelegate.launch(" + config.getName() + "," + mode + ") " + this);
 		}
 
+		// HACK - CLI invocation coming from Main thread
+		// TODO: Identify proper mechanism to handle CLI invocation
+		if (Thread.currentThread().getName().equalsIgnoreCase("Main")) {
+			//TODO: Do we need to cleanup the executor?
+			new DefaultDsfExecutor().schedule(() -> {
+				try {
+					launchDebugger(config, launch, monitor == null ? new NullProgressMonitor() : monitor);
+				} catch (CoreException e) {
+					// TODO: This won't give error message to user as of now, there could be some
+					// necessary cleanups also has to do
+					if (!launch.hasChildren()) {
+						DebugPlugin.getDefault().getLaunchManager().removeLaunch(launch);
+					}
+				}
+			}, 5, TimeUnit.SECONDS);
+		} else {
+			//NON CLI launch handled here
+			launchDebugger(config, launch, monitor == null ? new NullProgressMonitor() : monitor);
+		}
+
 		org.eclipse.cdt.launch.LaunchUtils.enableActivity("org.eclipse.cdt.debug.dsfgdbActivity", true); //$NON-NLS-1$
-		if (monitor == null) {
-			monitor = new NullProgressMonitor();
-		}
-		if (mode.equals(ILaunchManager.DEBUG_MODE) || mode.equals(ILaunchManager.RUN_MODE)) {
-			launchDebugger(config, launch, monitor);
-		}
+		//		if (monitor == null) {
+		//			monitor = new NullProgressMonitor();
+		//		}
+		//		if (mode.equals(ILaunchManager.DEBUG_MODE) || mode.equals(ILaunchManager.RUN_MODE)) {
+		//			launchDebugger(config, launch, monitor);
+		//		}
 	}
 
 	private void launchDebugger(ILaunchConfiguration config, ILaunch launch, IProgressMonitor monitor)
@@ -416,7 +436,6 @@ public class LaunchConfigurationDelegate extends AbstractGnuMcuLaunchConfigurati
 				SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK);
 
 		Query<Object> completeLaunchQuery = new Query<>() {
-
 			@Override
 			protected void execute(final DataRequestMonitor<Object> rm) {
 				DsfServicesTracker tracker = new DsfServicesTracker(GdbPlugin.getBundleContext(),
@@ -443,9 +462,7 @@ public class LaunchConfigurationDelegate extends AbstractGnuMcuLaunchConfigurati
 		try {
 			completeLaunchQuery.get();
 			succeed = true;
-		} catch (
-
-		InterruptedException e1) {
+		} catch (InterruptedException e1) {
 			throw new DebugException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, DebugException.INTERNAL_ERROR,
 					"Interrupted Exception in dispatch thread", e1)); //$NON-NLS-1$
 		} catch (ExecutionException e1) {
