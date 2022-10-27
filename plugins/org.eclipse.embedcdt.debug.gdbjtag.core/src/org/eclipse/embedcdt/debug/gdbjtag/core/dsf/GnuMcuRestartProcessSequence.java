@@ -94,7 +94,15 @@ public class GnuMcuRestartProcessSequence extends ReflectionSequence {
 	}
 
 	// ------------------------------------------------------------------------
+	//	<CUSTOMISATION - ASHLING> - GitLab riscfree-ui-829
+	public GnuMcuRestartProcessSequence(DsfExecutor executor, IContainerDMContext containerDmc,
+			Map<String, Object> attributes, boolean restart, DataRequestMonitor<IContainerDMContext> rm,
+			DsfServicesTracker servicesTracker) {
+		this(executor, containerDmc, attributes, restart, rm);
+		fTracker = servicesTracker;
+	}
 
+	//	<CUSTOMISATION - ASHLING>
 	protected IContainerDMContext getContainerContext() {
 		return fContainerDmc;
 	}
@@ -121,8 +129,16 @@ public class GnuMcuRestartProcessSequence extends ReflectionSequence {
 	@Execute
 	public void stepInitializeBaseSequence(RequestMonitor rm) {
 
-		fTracker = new DsfServicesTracker(Activator.getInstance().getBundle().getBundleContext(),
-				fContainerDmc.getSessionId());
+		//<CUSTOMISATION - ASHLING> - GitLab riscfree-ui-829
+		/*
+		 * For restart in case of AHMD launch we need core based ftracker from the constructor
+		 * and in other cases it will create ftracker from bundle context
+		 */
+		if (fTracker == null) {
+			fTracker = new DsfServicesTracker(Activator.getInstance().getBundle().getBundleContext(),
+					fContainerDmc.getSessionId());
+		}
+		//<CUSTOMISATION - ASHLING> - GitLab riscfree-ui-829
 		fCommandControl = fTracker.getService(IGDBControl.class);
 		fCommandFactory = fTracker.getService(IMICommandControl.class).getCommandFactory();
 		fProcService = fTracker.getService(IGDBProcesses.class);
