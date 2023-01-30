@@ -190,5 +190,11 @@ public class DebuggerCommands extends GnuMcuDebuggerCommandsService {
 		return Status.OK_STATUS;
 	}
 
+	@Override
+	public IStatus addMstatusCSRResetCommands(List<String> commandsList) {
+		// Currently CSR reg mstatus rest command not executing for QEMU
+		return Status.OK_STATUS;
+	}
+
 	// ------------------------------------------------------------------------
 }
