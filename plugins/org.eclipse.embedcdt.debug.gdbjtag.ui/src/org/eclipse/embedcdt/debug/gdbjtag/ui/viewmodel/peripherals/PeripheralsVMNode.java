@@ -26,8 +26,10 @@ import org.eclipse.cdt.dsf.concurrent.ConfinedToDsfExecutor;
 import org.eclipse.cdt.dsf.concurrent.DsfRunnable;
 import org.eclipse.cdt.dsf.concurrent.ImmediateExecutor;
 import org.eclipse.cdt.dsf.concurrent.RequestMonitor;
+import org.eclipse.cdt.dsf.datamodel.DMContexts;
 import org.eclipse.cdt.dsf.datamodel.IDMContext;
 import org.eclipse.cdt.dsf.debug.service.IRunControl;
+import org.eclipse.cdt.dsf.debug.service.command.ICommandControlService.ICommandControlDMContext;
 import org.eclipse.cdt.dsf.service.DsfServicesTracker;
 import org.eclipse.cdt.dsf.service.DsfSession;
 import org.eclipse.cdt.dsf.ui.concurrent.ViewerDataRequestMonitor;
@@ -56,6 +58,7 @@ import org.eclipse.debug.internal.ui.viewers.model.provisional.IViewerUpdate;
 import org.eclipse.embedcdt.debug.gdbjtag.core.datamodel.IPeripheralDMContext;
 import org.eclipse.embedcdt.debug.gdbjtag.core.datamodel.PeripheralDMContext;
 import org.eclipse.embedcdt.debug.gdbjtag.core.memory.PeripheralMemoryBlockRetrieval;
+import org.eclipse.embedcdt.debug.gdbjtag.core.memory.PeripheralMemoryBlockRetrievalWrapper;
 import org.eclipse.embedcdt.debug.gdbjtag.core.services.IPeripheralsService;
 import org.eclipse.embedcdt.debug.gdbjtag.ui.MemoryBlockMonitor;
 import org.eclipse.embedcdt.debug.gdbjtag.ui.render.peripherals.PeripheralsColumnPresentation;
@@ -233,15 +236,17 @@ public class PeripheralsVMNode extends AbstractDMVMNode
 			return;
 		}
 
-		if (fPeripherals != null) {
-			// On subsequent calls, use cached values.
-			if (Activator.getInstance().isDebugging()) {
-				System.out.println("PeripheralsVMNode.updateElementsInSessionThread() use cached values");
-			}
-			fillUpdateWithVMCs(update, fPeripherals);
-			update.done();
-			return;
-		}
+		//<CUSTOMISATION - ASHLING> Commenting this code portion and so that the service will take care of it, git-lab#riscfree-ui#528
+		//		if (fPeripherals != null) {
+		//			// On subsequent calls, use cached values.
+		//			if (Activator.getInstance().isDebugging()) {
+		//				System.out.println("PeripheralsVMNode.updateElementsInSessionThread() use cached values");
+		//			}
+		//			fillUpdateWithVMCs(update, fPeripherals);
+		//			update.done();
+		//			return;
+		//		}
+		//</CUSTOMISATION>
 
 		Executor executor;
 		executor = ImmediateExecutor.getInstance();
@@ -282,7 +287,13 @@ public class PeripheralsVMNode extends AbstractDMVMNode
 
 		final List<String> persistentPeripherals = new ArrayList<>();
 
-		Object object = containerDMContext.getAdapter(PeripheralMemoryBlockRetrieval.class);
+		PeripheralMemoryBlockRetrievalWrapper wraper = containerDMContext
+				.getAdapter(PeripheralMemoryBlockRetrievalWrapper.class);
+		Object object = wraper.getMemoryRetreival(
+				DMContexts.getAncestorOfType(containerDMContext, ICommandControlDMContext.class).getCommandControlId());
+		if (object == null) {
+			object = containerDMContext.getAdapter(PeripheralMemoryBlockRetrieval.class);
+		}
 		if (object instanceof PeripheralMemoryBlockRetrieval) {
 			persistentPeripherals.addAll(((PeripheralMemoryBlockRetrieval) object).getPersistentPeripherals());
 		}
@@ -298,7 +309,14 @@ public class PeripheralsVMNode extends AbstractDMVMNode
 			public void run() {
 
 				IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-				IMemoryBlockRetrieval retrieval = containerDMContext.getAdapter(PeripheralMemoryBlockRetrieval.class);
+				PeripheralMemoryBlockRetrievalWrapper wraper = containerDMContext
+						.getAdapter(PeripheralMemoryBlockRetrievalWrapper.class);
+				Object object = wraper.getMemoryRetreival(DMContexts
+						.getAncestorOfType(containerDMContext, ICommandControlDMContext.class).getCommandControlId());
+
+				IMemoryBlockRetrieval retrieval = object == null
+						? (IMemoryBlockRetrieval) containerDMContext.getAdapter(PeripheralMemoryBlockRetrieval.class)
+						: (IMemoryBlockRetrieval) object;
 
 				for (String peripheralName : persistentPeripherals) {
 					for (int i = 0; i < fPeripherals.length; ++i) {

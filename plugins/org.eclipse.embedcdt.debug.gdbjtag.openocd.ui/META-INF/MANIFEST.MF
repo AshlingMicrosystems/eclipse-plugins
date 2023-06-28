@@ -29,3 +29,4 @@ Export-Package: org.eclipse.embedcdt.debug.gdbjtag.openocd.ui,
  org.eclipse.embedcdt.internal.debug.gdbjtag.openocd.ui.properties;x-internal:=true
 Bundle-Activator: org.eclipse.embedcdt.internal.debug.gdbjtag.openocd.ui.Activator
 Automatic-Module-Name: org.eclipse.embedcdt.debug.gdbjtag.openocd.ui
+Import-Package: com.ashling.riscfree.debug.efinix.core
