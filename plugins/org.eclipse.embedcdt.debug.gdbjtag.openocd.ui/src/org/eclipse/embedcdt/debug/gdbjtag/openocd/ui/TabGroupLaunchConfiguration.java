@@ -14,8 +14,8 @@
 
 package org.eclipse.embedcdt.debug.gdbjtag.openocd.ui;
 
+import com.ashling.riscfree.debug.efinix.core.EfinixCommonTab;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
-import org.eclipse.debug.ui.CommonTab;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.debug.ui.sourcelookup.SourceLookupTab;
@@ -39,7 +39,7 @@ public class TabGroupLaunchConfiguration extends AbstractLaunchConfigurationTabG
 		TabStartup tabStartup = new TabStartup();
 
 		ILaunchConfigurationTab tabs[] = new ILaunchConfigurationTab[] { new TabMain(), new TabDebugger(tabStartup),
-				tabStartup, new SourceLookupTab(), new CommonTab(), new TabSvd() };
+				tabStartup, new SourceLookupTab(), new EfinixCommonTab(), new TabSvd() };
 
 		setTabs(tabs);
 
