@@ -68,5 +68,7 @@ public interface IGnuMcuDebuggerCommandsService {
 
 	public IStatus addStopAtCommands(List<String> commandsList);
 
+	public IStatus addMstatusCSRResetCommands(List<String> commandsList);
+
 	// ------------------------------------------------------------------------
 }
