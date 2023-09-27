@@ -32,6 +32,9 @@ import org.eclipse.embedcdt.debug.gdbjtag.core.services.PeripheralMemoryService;
 import org.eclipse.embedcdt.debug.gdbjtag.core.services.PeripheralsService;
 import org.eclipse.embedcdt.internal.debug.gdbjtag.core.Activator;
 
+import com.ashling.riscfree.globalvariable.view.dsf.GlobalVariableService;
+import com.ashling.riscfree.globalvariable.view.dsf.IGlobalVariableService;
+
 /**
  * Services factory intended to create the peripherals service.
  * <p>
@@ -81,6 +84,11 @@ public abstract class GnuMcuServicesFactory extends GdbDebugServicesFactory {
 				}
 			}
 		}
+		// <CUSTOMIZATION - ASHLING>
+		else if (IGlobalVariableService.class.isAssignableFrom(clazz)) {
+			return (V) createGlobalVariableService(session);
+		}
+		// </CUSTOMIZATION>
 		return super.createService(clazz, session, optionalArguments);
 	}
 
@@ -156,4 +164,10 @@ public abstract class GnuMcuServicesFactory extends GdbDebugServicesFactory {
 	}
 
 	// ------------------------------------------------------------------------
+
+	// <CUSTOMIZATION - ASHLING>
+	private GlobalVariableService createGlobalVariableService(DsfSession session) {
+		return new GlobalVariableService(session);
+	}
+	// </CUSTOMIZATION
 }
