@@ -188,9 +188,6 @@ public class SvdUtils {
 	 */
 	public static IPath getSvdPath(ILaunchConfiguration launchConfiguration) throws CoreException {
 
-		ICConfigurationDescription cConfigDescription = EclipseUtils.getBuildConfigDescription(launchConfiguration);
-		IProject project = cConfigDescription.getProjectDescription().getProject();
-
 		String value = launchConfiguration.getAttribute(ConfigurationAttributes.SVD_PATH, "");
 
 		if (!value.isEmpty()) {
@@ -204,6 +201,10 @@ public class SvdUtils {
 			}
 		}
 
+		//<CUSTOMIZATION>-ASHLING Multicore launch doesn't have build configuration now, got null here
+		//Moving the location from first line to here to avoid null pointer
+		ICConfigurationDescription cConfigDescription = EclipseUtils.getBuildConfigDescription(launchConfiguration);
+		IProject project = cConfigDescription.getProjectDescription().getProject();
 		// If not explicitly set by the user, search for the SVD/XSVD.
 		IConfiguration config = EclipseUtils.getConfigurationFromDescription(cConfigDescription);
 
