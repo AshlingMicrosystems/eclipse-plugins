@@ -908,6 +908,14 @@ public class PeripheralMemoryBlockExtension extends PlatformObject
 		if (adapter.equals(IMemoryBlockRetrieval.class))
 			return getMemoryBlockRetrieval();
 
+		/*
+		 * <Ashling customization> - GitLab#528
+		 */
+		if (adapter.equals(IMemoryDMContext.class))
+			return fMemoryDMContext;
+		/*
+		 * <Ashling customization> - GitLab#528
+		 */
 		return super.getAdapter(adapter);
 	}
 
