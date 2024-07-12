@@ -139,7 +139,9 @@ public class GdbServerBackend extends GnuMcuGdbServerBackend {
 
 	@Override
 	public boolean canMatchStdOut() {
-		return Configuration.hasLegacyInterface(fLaunchConfiguration);
+		//TODO : Ashling Need to double check. Duding changing to embed-cdt, seen this is returning false in Ashling repo, so maintained the same
+		//Embed CDT, returning true
+		return false;
 	}
 
 	@Override
@@ -157,8 +159,9 @@ public class GdbServerBackend extends GnuMcuGdbServerBackend {
 	}
 
 	/**
-	 * Use the exit code and the captured
-	 * string to compose the text displayed in case of error.
+	 * Since the J-Link stderr messages are not final, this function makes the
+	 * best use of the available information (the exit code and the captured
+	 * string) to compose the text displayed in case of error.
 	 *
 	 * @param exitCode
 	 *            an integer with the process exit code.

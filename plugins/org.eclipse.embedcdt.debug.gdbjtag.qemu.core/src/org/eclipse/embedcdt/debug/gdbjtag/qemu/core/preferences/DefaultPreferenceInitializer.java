@@ -103,55 +103,45 @@ public class DefaultPreferenceInitializer extends AbstractPreferenceInitializer 
 
 			// ----------------------------------------------------------------
 
-			for (String prefix : PersistentPreferences.architectures) {
-				initializeDefaultsForPrefix(prefix + '.');
-			}
-
-			// For compatibility reasons, add the defaults for an unnamed prefix.
-			initializeDefaultsForPrefix("");
-
-			if (Activator.getInstance().isDebugging()) {
-				System.out.println("qemu.LateInitializer.finalizeInitializationsDefaultPreferences() done");
-			}
-		}
-
-		private void initializeDefaultsForPrefix(String prefix) {
-
 			// Try the default executable name.
-			String executableName = fDefaultPreferences.getExecutableName(prefix);
+			String executableName = fDefaultPreferences.getExecutableName();
 			if (executableName.isEmpty()) {
 				// Try the platform specific name.
-				executableName = fDefaultPreferences.getExecutableNameOs(prefix);
+				executableName = fDefaultPreferences.getExecutableNameOs();
 			}
 
 			if (executableName.isEmpty()) {
 				// Try the persistent preferences.
-				executableName = fPersistentPreferences.getExecutableName(prefix);
+				executableName = fPersistentPreferences.getExecutableName();
 			}
 
 			if (!executableName.isEmpty()) {
 				// Save the result back as default.
-				fDefaultPreferences.putExecutableName(prefix, executableName);
+				fDefaultPreferences.putExecutableName(executableName);
 			}
 
 			// ----------------------------------------------------------------
 
 			// Try the defaults.
-			String path = fDefaultPreferences.getInstallFolder(prefix);
+			String path = fDefaultPreferences.getInstallFolder();
 			if (!fDefaultPreferences.checkFolderExecutable(path, executableName)) {
 				// Try the persistent preferences.
-				path = fPersistentPreferences.getInstallFolder(prefix);
+				path = fPersistentPreferences.getInstallFolder();
 			}
 
 			if (!fDefaultPreferences.checkFolderExecutable(path, executableName)) {
 				// If not defined elsewhere, discover.
-				path = fDefaultPreferences.discoverInstallPath(prefix, "bin", executableName);
+				path = fDefaultPreferences.discoverInstallPath("bin", executableName);
 			}
 
 			if (path != null && !path.isEmpty()) {
 				// If the path was finally discovered, store
 				// it in the default preferences.
-				fDefaultPreferences.putInstallFolder(prefix, path);
+				fDefaultPreferences.putInstallFolder(path);
+			}
+
+			if (Activator.getInstance().isDebugging()) {
+				System.out.println("qemu.LateInitializer.finalizeInitializationsDefaultPreferences() done");
 			}
 		}
 	}
