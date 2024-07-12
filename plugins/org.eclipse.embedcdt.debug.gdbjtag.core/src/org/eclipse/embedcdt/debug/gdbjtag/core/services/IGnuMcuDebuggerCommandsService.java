@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 public interface IGnuMcuDebuggerCommandsService {
 
@@ -64,9 +65,27 @@ public interface IGnuMcuDebuggerCommandsService {
 	 */
 	public IStatus addStartRestartCommands(boolean doReset, List<String> commandsList);
 
+	//ASHLING CUSTOMIZATION - https://gitlab.com/ashling/riscfree/riscfree-ui/-/issues/1745
+
+	//Add functionality "Periodically check PC while halted" option  is selected
+	public default IStatus addDisableAllBreakPointsIfTargetStatusCheckEnabled(List<String> commandsList) {
+		return Status.OK_STATUS;
+	}
+
+	//Add functionality "Periodically check PC while halted" option  is selected
+	public default IStatus addEnableAllBreakPointsIfTargetStatusCheckEnabled(List<String> commandsList) {
+		return Status.OK_STATUS;
+	}
+
+	//ASHLING CUSTOMIZATION - https://gitlab.com/ashling/riscfree/riscfree-ui/-/issues/1745
+
 	public IStatus addSetPcCommands(List<String> commandsList);
 
 	public IStatus addStopAtCommands(List<String> commandsList);
+
+	public IStatus addMstatusCSRResetCommands(List<String> commandsList);
+
+	public IStatus addDCSRResetCommands(String registerValue, List<String> commandsList);
 
 	// ------------------------------------------------------------------------
 }
