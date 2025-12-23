@@ -20,11 +20,11 @@ import java.util.List;
 
 import org.eclipse.cdt.dsf.datamodel.DMContexts;
 import org.eclipse.cdt.dsf.datamodel.IDMContext;
-import org.eclipse.cdt.dsf.debug.model.DsfMemoryBlockRetrieval;
 import org.eclipse.cdt.dsf.debug.service.IMemory;
 import org.eclipse.cdt.dsf.debug.service.IMemory.IMemoryDMContext;
 import org.eclipse.cdt.dsf.debug.service.IRunControl.IExitedDMEvent;
 import org.eclipse.cdt.dsf.gdb.internal.GdbPlugin;
+import org.eclipse.cdt.dsf.gdb.internal.memory.GdbMemoryBlockRetrieval;
 import org.eclipse.cdt.dsf.service.DsfServiceEventHandler;
 import org.eclipse.cdt.dsf.service.DsfSession;
 import org.eclipse.core.runtime.CoreException;
@@ -44,7 +44,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 @SuppressWarnings("restriction")
-public class PeripheralMemoryBlockRetrieval extends DsfMemoryBlockRetrieval {
+public class PeripheralMemoryBlockRetrieval extends GdbMemoryBlockRetrieval {
 
 	// ------------------------------------------------------------------------
 
@@ -96,7 +96,7 @@ public class PeripheralMemoryBlockRetrieval extends DsfMemoryBlockRetrieval {
 		 * if (Activator.getInstance().isDebugging()) {
 			System.out.println("PeripheralMemoryBlockRetrieval.getPersistentPeripherals()");
 		}
-		
+
 		if (fPersistentPeripherals == null) {
 			String memento;
 			try {
@@ -108,14 +108,14 @@ public class PeripheralMemoryBlockRetrieval extends DsfMemoryBlockRetrieval {
 					fPersistentPeripherals = parsePeripheralsMemento(memento);
 				}
 			} catch (CoreException e) {
-		
+
 			}
 			if (fPersistentPeripherals == null) {
 				fPersistentPeripherals = new ArrayList<>();
 			}
 		}
 		return fPersistentPeripherals;
-
+		
 		*
 		*/
 		return new ArrayList<>();
@@ -187,37 +187,37 @@ public class PeripheralMemoryBlockRetrieval extends DsfMemoryBlockRetrieval {
 		 *
 		 * No need to save the peripheral persistence and memory block persistence
 		 * since the AHMD launch doesn't support the core specific persistence
-		
-		
+
+
 		if (Activator.getInstance().isDebugging()) {
 			System.out.println("PeripheralMemoryBlockRetrieval.saveMemoryBlocks()");
 		}
-		
+
 		try {
 			ILaunchConfigurationWorkingCopy wc = fLaunchConfig.getWorkingCopy();
-		
+
 			if (fPersistentPeripherals != null) {
 				// Save peripherals only if the Peripherals view was used,
 				// otherwise leave them as before.
 				wc.setAttribute(PERIPHERALS_MEMENTO_ID, getPeripheralsMemento());
 			try {
 				ILaunchConfigurationWorkingCopy wc = fLaunchConfig.getWorkingCopy();
-		
+
 				if (fPersistentPeripherals != null) {
 					// Save peripherals only if the Peripherals view was used,
 					// otherwise leave them as before.
 					wc.setAttribute(PERIPHERALS_MEMENTO_ID, getPeripheralsMemento());
 				}
-		
+
 				wc.setAttribute(ATTR_DEBUGGER_MEMORY_BLOCKS, getMemoryMemento());
-		
+
 				wc.doSave();
 			} catch (CoreException e) {
 				DsfPlugin.getDefault().getLog().log(e.getStatus());
 			}
-		
+
 			wc.setAttribute(ATTR_DEBUGGER_MEMORY_BLOCKS, getMemoryMemento());
-		
+
 			wc.doSave();
 		} catch (CoreException e) {
 			DsfPlugin.getDefault().getLog().log(e.getStatus());
