@@ -97,7 +97,7 @@ public class PeripheralMemoryBlockRetrieval extends GdbMemoryBlockRetrieval {
 		 * if (Activator.getInstance().isDebugging()) {
 			System.out.println("PeripheralMemoryBlockRetrieval.getPersistentPeripherals()");
 		}
-		
+
 		if (fPersistentPeripherals == null) {
 			String memento;
 			try {
@@ -109,14 +109,14 @@ public class PeripheralMemoryBlockRetrieval extends GdbMemoryBlockRetrieval {
 					fPersistentPeripherals = parsePeripheralsMemento(memento);
 				}
 			} catch (CoreException e) {
-		
+
 			}
 			if (fPersistentPeripherals == null) {
 				fPersistentPeripherals = new ArrayList<>();
 			}
 		}
 		return fPersistentPeripherals;
-
+		
 		*
 		*/
 		return new ArrayList<>();
@@ -188,37 +188,37 @@ public class PeripheralMemoryBlockRetrieval extends GdbMemoryBlockRetrieval {
 		 *
 		 * No need to save the peripheral persistence and memory block persistence
 		 * since the AHMD launch doesn't support the core specific persistence
-		
-		
+
+
 		if (Activator.getInstance().isDebugging()) {
 			System.out.println("PeripheralMemoryBlockRetrieval.saveMemoryBlocks()");
 		}
-		
+
 		try {
 			ILaunchConfigurationWorkingCopy wc = fLaunchConfig.getWorkingCopy();
-		
+
 			if (fPersistentPeripherals != null) {
 				// Save peripherals only if the Peripherals view was used,
 				// otherwise leave them as before.
 				wc.setAttribute(PERIPHERALS_MEMENTO_ID, getPeripheralsMemento());
 			try {
 				ILaunchConfigurationWorkingCopy wc = fLaunchConfig.getWorkingCopy();
-		
+
 				if (fPersistentPeripherals != null) {
 					// Save peripherals only if the Peripherals view was used,
 					// otherwise leave them as before.
 					wc.setAttribute(PERIPHERALS_MEMENTO_ID, getPeripheralsMemento());
 				}
-		
+
 				wc.setAttribute(ATTR_DEBUGGER_MEMORY_BLOCKS, getMemoryMemento());
-		
+
 				wc.doSave();
 			} catch (CoreException e) {
 				DsfPlugin.getDefault().getLog().log(e.getStatus());
 			}
-		
+
 			wc.setAttribute(ATTR_DEBUGGER_MEMORY_BLOCKS, getMemoryMemento());
-		
+
 			wc.doSave();
 		} catch (CoreException e) {
 			DsfPlugin.getDefault().getLog().log(e.getStatus());
