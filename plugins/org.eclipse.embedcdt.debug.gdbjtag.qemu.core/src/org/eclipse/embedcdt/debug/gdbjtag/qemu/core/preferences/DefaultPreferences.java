@@ -34,11 +34,12 @@ public class DefaultPreferences extends org.eclipse.embedcdt.debug.gdbjtag.core.
 	//ASHLING CUSTOMIZATION - Default preferences for the combo box's
 	public static final String QEMU_BOARD_ARCHITECTURE = "RISC-V";
 	public static final String QEMU_BOARD_BIT = "32";
+	public static final String MIPS_QEMU_BOARD_BIT = "64";
 	//ASHLING CUSTOMIZATION - Default preferences for the combo box's
 
 	public static final int SERVER_GDB_PORT_NUMBER_DEFAULT = 1234;
 	public static final String SERVER_OTHER_OPTIONS_DEFAULT = "-S -d unimp,guest_errors"; //$NON-NLS-1$
-	public static final String SERVER_OTHER_OPTIONS_DEFAULT_RISC_V_32 = "-bios none -S -d unimp,guest_errors"; //$NON-NLS-1$
+	public static final String SERVER_OTHER_OPTIONS_DEFAULT_RISC_V_32 = "-S -bios none"; //$NON-NLS-1$
 
 	public static final boolean DO_GDB_SERVER_ALLOCATE_CONSOLE_DEFAULT = true;
 
@@ -90,7 +91,9 @@ public class DefaultPreferences extends org.eclipse.embedcdt.debug.gdbjtag.core.
 
 	//		<CUSTOMISATION> ASHLING
 	public static final String SERVER_EXECUTABLE_DEFAULT = "${eclipse_home}/../qemu/qemu-system-riscv32";
-	protected static final String CLIENT_EXECUTABLE_DEFAULT = "${eclipse_home}/../toolchain/riscv64-unknown-elf/bin/riscv64-unknown-elf-gdb";
+	public static final String MIPS_SERVER_EXECUTABLE_DEFAULT = "${eclipse_home}/../toolchain/riscv64-mti-elf/bin/qemu-system-riscv64.exe";
+	protected static final String CLIENT_EXECUTABLE_DEFAULT = "${eclipse_home}/../toolchain/riscv/riscv64-unknown-elf/bin/riscv64-unknown-elf-gdb";
+	protected static final String MIPS_CLIENT_EXECUTABLE_DEFAULT = "${eclipse_home}/../toolchain/riscv64-mti-elf/bin/riscv64-mti-elf-gdb";
 
 	public enum OS {
 		WINDOWS, LINUX
@@ -109,11 +112,20 @@ public class DefaultPreferences extends org.eclipse.embedcdt.debug.gdbjtag.core.
 				getOSSpecificExecutableString(SERVER_EXECUTABLE_DEFAULT));
 	}
 
+	public String getMIPSGdbServerExecutable() {
+		return getString(PersistentPreferences.GDB_SERVER_EXECUTABLE,
+				getOSSpecificExecutableString(MIPS_SERVER_EXECUTABLE_DEFAULT));
+	}
+
 	public String getGdbClientExecutable() {
 		return getString(PersistentPreferences.GDB_CLIENT_EXECUTABLE,
 				getOSSpecificExecutableString(CLIENT_EXECUTABLE_DEFAULT));
 	}
 
+	public String getMIPSGdbClientExecutable() {
+		return getString(PersistentPreferences.GDB_CLIENT_EXECUTABLE,
+				getOSSpecificExecutableString(MIPS_CLIENT_EXECUTABLE_DEFAULT));
+	}
 	// ------------------------------------------------------------------------
 
 	public String getExecutableName() {

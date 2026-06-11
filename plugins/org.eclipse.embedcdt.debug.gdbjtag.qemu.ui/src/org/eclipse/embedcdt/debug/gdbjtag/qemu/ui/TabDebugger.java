@@ -146,6 +146,7 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 	private static final String gdbClientExecutablePathArm = "${eclipse_home}/../toolchain/Arm/aarch64-none-elf/bin/aarch64-none-elf-gdb";
 
 	public static final String INTEL_BUNDLE_NAME = "com.ashling.riscfree.managedbuild.cross.intelriscv.core";
+	public static final String MIPS_BUNDLE_NAME = "com.ashling.riscfree.managedbuild.cross.mips";
 
 	// ------------------------------------------------------------------------
 
@@ -560,7 +561,6 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 					}
 
 				}
-
 			}
 		};
 		// <CUSTOMISATION> ASHLING -Default value of all other options (like Board name,
@@ -999,9 +999,14 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 				fGdbArchitectureSelection.setText(configuration.getAttribute(
 						ConfigurationAttributes.GDB_SERVER_ARCHITECTURE, DefaultPreferences.QEMU_BOARD_ARCHITECTURE));
 
-				fGdbBitSelection.setText(configuration.getAttribute(ConfigurationAttributes.GDB_SERVER_ARCHITECTURE_BIT,
-						DefaultPreferences.QEMU_BOARD_BIT));
-
+				if (isMIPSBundlesAvailable()) {
+					fGdbBitSelection
+							.setText(configuration.getAttribute(ConfigurationAttributes.GDB_SERVER_ARCHITECTURE_BIT,
+									DefaultPreferences.MIPS_QEMU_BOARD_BIT));
+				} else {
+					fGdbBitSelection.setText(configuration.getAttribute(
+							ConfigurationAttributes.GDB_SERVER_ARCHITECTURE_BIT, DefaultPreferences.QEMU_BOARD_BIT));
+				}
 				// ASHLING CUSTOMIZATION - Setting values to the dropdown's from the saved
 				// configuration
 
@@ -1011,7 +1016,12 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 						configuration.getAttribute(ConfigurationAttributes.DO_START_GDB_SERVER, booleanDefault));
 
 				// Executable
-				stringDefault = fPersistentPreferences.getGdbServerExecutable();
+				if (isMIPSBundlesAvailable()) {
+					stringDefault = fPersistentPreferences.getMIPSGdbServerExecutable();
+				} else {
+					stringDefault = fPersistentPreferences.getGdbServerExecutable();
+				}
+
 				fGdbServerExecutable.setText(
 						configuration.getAttribute(ConfigurationAttributes.GDB_SERVER_EXECUTABLE, stringDefault));
 
@@ -1090,7 +1100,11 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			// GDB Client Setup
 			{
 				// Executable
-				stringDefault = fPersistentPreferences.getGdbClientExecutable();
+				if (isMIPSBundlesAvailable()) {
+					stringDefault = fPersistentPreferences.getMIPSGdbClientExecutable();
+				} else {
+					stringDefault = fPersistentPreferences.getGdbClientExecutable();
+				}
 				String gdbCommandAttr = configuration.getAttribute(IGDBLaunchConfigurationConstants.ATTR_DEBUG_NAME,
 						stringDefault);
 				fGdbClientExecutable.setText(gdbCommandAttr);
@@ -1100,9 +1114,12 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 				fGdbClientOtherOptions.setText(
 						configuration.getAttribute(ConfigurationAttributes.GDB_CLIENT_OTHER_OPTIONS, stringDefault));
 
-				stringDefault = fPersistentPreferences.getGdbClientCommands();
-				fGdbClientOtherCommands.setText(
-						configuration.getAttribute(ConfigurationAttributes.GDB_CLIENT_OTHER_COMMANDS, stringDefault));
+				if (isMIPSBundlesAvailable()) {
+					stringDefault = "";
+				} else {
+					fGdbClientOtherCommands.setText(configuration
+							.getAttribute(ConfigurationAttributes.GDB_CLIENT_OTHER_COMMANDS, stringDefault));
+				}
 			}
 
 			// Remote target
@@ -1137,6 +1154,11 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 		if (Activator.getInstance().isDebugging()) {
 			System.out.println("qemu.TabDebugger.initializeFrom() completed " + configuration.getName());
+		}
+
+		if (isMIPSBundlesAvailable()) {
+			fGdbBitSelection.setEnabled(false);
+			fGdbArchitectureSelection.setEnabled(false);
 		}
 	}
 
@@ -1491,7 +1513,12 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			defaultBoolean = DefaultPreferences.DO_START_GDB_SERVER_DEFAULT;
 			configuration.setAttribute(ConfigurationAttributes.DO_START_GDB_SERVER, defaultBoolean);
 
-			defaultString = fPersistentPreferences.getGdbServerExecutable();
+			if (isMIPSBundlesAvailable()) {
+				defaultString = fPersistentPreferences.getMIPSGdbServerExecutable();
+			} else {
+				defaultString = fPersistentPreferences.getGdbServerExecutable();
+			}
+
 			configuration.setAttribute(ConfigurationAttributes.GDB_SERVER_EXECUTABLE, defaultString);
 
 			configuration.setAttribute(ConfigurationAttributes.GDB_SERVER_GDB_PORT_NUMBER,
@@ -1531,8 +1558,13 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 
 		// GDB client setup
 		{
-			configuration.setAttribute(IGDBLaunchConfigurationConstants.ATTR_DEBUG_NAME,
-					fPersistentPreferences.getGdbClientExecutable());
+			if (isMIPSBundlesAvailable()) {
+				configuration.setAttribute(IGDBLaunchConfigurationConstants.ATTR_DEBUG_NAME,
+						fPersistentPreferences.getMIPSGdbClientExecutable());
+			} else {
+				configuration.setAttribute(IGDBLaunchConfigurationConstants.ATTR_DEBUG_NAME,
+						fPersistentPreferences.getGdbClientExecutable());
+			}
 
 			//<ASHLING-CUSTOMIZATION>
 			defaultString = DefaultPreferences.CLIENT_OTHER_OPTIONS_DEFAULT;
@@ -1582,6 +1614,10 @@ public class TabDebugger extends AbstractLaunchConfigurationTab {
 			return executableString + ".exe";
 		}
 		return executableString;
+	}
+
+	public static boolean isMIPSBundlesAvailable() {
+		return Platform.getBundle(MIPS_BUNDLE_NAME) != null ? true : false;
 	}
 
 	//		<CUSTOMISATION> ASHLING

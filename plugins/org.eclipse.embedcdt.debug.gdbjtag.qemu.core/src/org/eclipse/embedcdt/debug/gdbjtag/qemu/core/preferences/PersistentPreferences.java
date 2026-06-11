@@ -105,6 +105,16 @@ public class PersistentPreferences extends org.eclipse.embedcdt.debug.gdbjtag.co
 		return fDefaultPreferences.getGdbServerExecutable();
 	}
 
+	// </ASHLING-CUSTOMIZATION>
+	public String getMIPSGdbServerExecutable() {
+		return fDefaultPreferences.getMIPSGdbServerExecutable();
+	}
+
+	public String getMIPSGdbClientExecutable() {
+		return fDefaultPreferences.getMIPSGdbClientExecutable();
+	}
+	// </ASHLING-CUSTOMIZATION>
+
 	public void putGdbServerExecutable(String value) {
 
 		putWorkspaceString(GDB_SERVER_EXECUTABLE, value);

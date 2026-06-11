@@ -116,7 +116,7 @@ public class GnuMcuFinalLaunchSequence extends GDBJtagDSFFinalLaunchSequence {
 		if (GROUP_TOP_LEVEL.equals(group)) {
 
 			for (int i = 0; i < topToRemove.length; ++i) {
-				int ix = orderList.indexOf(topToRemove[i]);
+				int ix = orderList.indexOf(jtagToRemove[i]);
 				if (ix >= 0) {
 					orderList.remove(ix);
 				}

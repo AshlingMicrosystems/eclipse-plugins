@@ -106,8 +106,11 @@
 			</element>
 		</complex-array>
 	</process>
-
-	<process type="org.eclipse.cdt.managedbuilder.core.SetMBSStringOptionValue">
+	<!--  ASHLING CUSTOMIZATION  -->
+<!--  Below code commented to resolve build issue due to due to the linker flag setting specs=nosys.specs'.
+System calls will not work for cout or printf as long as the setting there for the project.
+Keeping the commented block for awhile to confirm the change does not affect the other settings-->
+<!-- 	<process type="org.eclipse.cdt.managedbuilder.core.SetMBSStringOptionValue">
 		<simple
 			name="projectName"
 			value="$(projectName)" />
@@ -124,8 +127,8 @@
 					value="" />
 			</element>
 		</complex-array>
-	</process>
-
+	</process> -->
+	<!--  ASHLING CUSTOMIZATION  -->
 	<process type="org.eclipse.cdt.ui.OpenFiles">
 		<simple
 			name="projectName"
